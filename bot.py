@@ -4,8 +4,6 @@ from config_data import config
 from handlers import user_handlers, unregister_handlers
 from keyboards.main_menu import set_main_menu
 
-
-
 async def main() -> None:
     bot = Bot(token=config.BOT_TOKEN)
     dp = Dispatcher()

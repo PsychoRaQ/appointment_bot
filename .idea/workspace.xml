@@ -7,15 +7,17 @@
     <list default="true" id="1d851286-6041-4842-8d51-66956f1dd52c" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/bot.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/config_data/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/config_data/config.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/database/datetime.json" beforeDir="false" afterPath="$PROJECT_DIR$/database/datetime.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/database/users.json" beforeDir="false" afterPath="$PROJECT_DIR$/database/users.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/handlers/unregister_handlers.py" beforeDir="false" afterPath="$PROJECT_DIR$/handlers/unregister_handlers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/filters/filters.py" beforeDir="false" afterPath="$PROJECT_DIR$/filters/filters.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/handlers/user_handlers.py" beforeDir="false" afterPath="$PROJECT_DIR$/handlers/user_handlers.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/keyboards/calendary_kb.py" beforeDir="false" afterPath="$PROJECT_DIR$/keyboards/calendary_kb.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/keyboards/main_menu.py" beforeDir="false" afterPath="$PROJECT_DIR$/keyboards/main_menu.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/keyboards/sign_in_kb.py" beforeDir="false" afterPath="$PROJECT_DIR$/keyboards/sign_in_kb.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/keyboards/other_kb.py" beforeDir="false" afterPath="$PROJECT_DIR$/keyboards/other_kb.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lexicon/lexicon.py" beforeDir="false" afterPath="$PROJECT_DIR$/lexicon/lexicon.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/services/database_func.py" beforeDir="false" afterPath="$PROJECT_DIR$/services/database_func.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/datetime.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/service_func.py" beforeDir="false" afterPath="$PROJECT_DIR$/services/service_func.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test.py" beforeDir="false" afterPath="$PROJECT_DIR$/test.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
