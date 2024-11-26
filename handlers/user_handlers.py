@@ -18,29 +18,37 @@ from services import database_func
 router = Router()
 router.message.filter(UserIsRegister())
 
-
+# Хэндлер для команды "Помощь"
 @router.message(Command(commands='help'))
 async def proccess_help_command(message: Message):
     await message.answer(LEXICON['/help'])
 
-
+# Хэндлер для команды "Начало работы"
 @router.message(Command(commands='beginning'))
 async def proccess_beginning_command(message: Message):
     await message.answer(LEXICON['/beginning'])
 
-
+# Хэндлер для отображения календаря (и дальнейшая запись)
 @router.message(Command(commands='calendary'))
 async def proccess_calendary_command(message: Message):
     keyboard = create_calendary_kb(7, **DATE_LST)
     await message.answer(text='Календарь',
                          reply_markup=keyboard)
 
+# Хэндлер для всех оставшихся сообщений
 @router.message()
 async def test_other_handlers(message: Message):
-    print(message.contact)
+    print('Без хэндлера')
     await message.answer(text='123')
 
 
+
+
+
+
+
+#########################
+# Старые хэндлеры для колбэков-записи
 @router.callback_query(F.data.in_(DATE_LST))
 async def process_date_is_confirm(callback: CallbackQuery):
     keyboard = create_times_kb(5, DATE_LST[callback.data])
@@ -66,8 +74,9 @@ async def process_datetime_is_choose(callback: CallbackQuery):
 #
 #
 
+#################################
 
-
+# Хэндлер для всех оставшихся колбэков, для теста
 @router.callback_query()
 async def process_datetime_is_choose(callback: CallbackQuery):
     print('callback.data')

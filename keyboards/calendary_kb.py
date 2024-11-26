@@ -4,6 +4,7 @@ from lexicon.lexicon import DATE_LST
 from config_data import config
 
 
+# Создание инлайн-клавиатуры календаря (даты)
 def create_calendary_kb(width: int, *args, **kwargs) -> InlineKeyboardMarkup:
     kb_builder = InlineKeyboardBuilder()
 
@@ -21,7 +22,7 @@ def create_calendary_kb(width: int, *args, **kwargs) -> InlineKeyboardMarkup:
 
     return kb_builder.as_markup()
 
-
+# Создание инлайн-клавиатуры календаря (доступное время)
 def create_times_kb(width: int, obj) -> InlineKeyboardMarkup:
     kb_builder = InlineKeyboardBuilder()
     buttons: list[InlineKeyboardButton] = []

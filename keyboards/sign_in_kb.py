@@ -1,13 +1,13 @@
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+from aiogram.types import InlineKeyboardButton
 
 from lexicon.lexicon import START_KB_TEXT
 from services.database_func import get_user_data_from_db
 
+# Создание инлайн-клавиатуры для команды /start
+# СЕЙЧАС НЕ АКТУАЛЬНО
 def create_start_kb(user_id):
     kb_builder = InlineKeyboardBuilder()
-
-
 
     user = get_user_data_from_db(user_id) # Достаем данные о пользователе из базы, на их основе строим клавиатуру
     name = 'yes_name' if user['name'] else 'no_name'
