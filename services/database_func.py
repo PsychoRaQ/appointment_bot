@@ -19,9 +19,10 @@ DEFAULT_USER_DATABASE = {'name': None,
 #               '11:00': {'lock': True, 'user': 'username'}
 #               }
 
+# СТАНДАРТНОЕ ЗАПОЛНЕНИЕ БАЗЫ ДАТ И ВРЕМЕНИ
 # datetime_gen = {f'{date}.{MONTH}':{f'{time}':{'lock':False, 'user': None}for time in DATETIME} for date in range(1,32)}
 # with open(DATETIME_PATH, 'w') as file:
-#     json.dump(datetime_gen, file)
+#      json.dump(datetime_gen, file)
 
 # Проверка регистрации пользователя в боте
 def check_user_is_sign(user_id: str):
@@ -81,30 +82,50 @@ def get_datetime_from_db():
     return db
 
 # Изменение статуса в базе данных (занять дату/время)
-async def change_datetime_status(user_id, datetime) -> None:
+async def change_datetime_status(user_id, datetime, status) -> None:
     # Записываем дату в базу с датами
     db = get_datetime_from_db()
+
     try:
         date,time = datetime.split(',')
     except Exception as e:
         print(e)
         return e
+
+    # Блок для записи даты (если свободна)
     if db[date][time]['lock'] is False:
         db[date][time]['lock'] = True
         db[date][time]['user'] = user_id
+
+    # Блок для очистки даты (если занята)
+    elif db[date][time]['lock'] is True:
+        db[date][time]['lock'] = False
+        db[date][time]['user'] = None
+
     with open(DATETIME_PATH, 'w') as file:
         json.dump(db, file)
 
-    # Записываем дату в профиль пользователя
-    with open(USERS_PATH, 'r') as file:
-        db = json.load(file)
-    # Пытаемся найти существующую запись с нужной датой у пользователя и добавить время в нее
-    try:
-        db[user_id]['date'][date].append(time)
-    # Если ее нет - создаем дату со списком (чтобы в будущем можно было добавить еще одно время)
-    except:
-        db[user_id]['date'][date] = [time]
-    with open(USERS_PATH, 'w') as file:
-        json.dump(db, file)
+    if status == 'add':
+        # Записываем дату в профиль пользователя
+        with open(USERS_PATH, 'r') as file:
+            db = json.load(file)
+        # Пытаемся найти существующую запись с нужной датой у пользователя и добавить время в нее
+        try:
+            db[user_id]['date'][date].append(time)
+        # Если ее нет - создаем дату со списком (чтобы в будущем можно было добавить еще одно время)
+        except:
+            db[user_id]['date'][date] = [time]
+        with open(USERS_PATH, 'w') as file:
+            json.dump(db, file)
 
-
+    elif status == 'clear':
+        # Очищаем дату из профиля пользователя
+        with open(USERS_PATH, 'r') as file:
+            db = json.load(file)
+        # Удаляем время из нужной даты
+        db[user_id]['date'][date].remove(time)
+        # Если у даты больше не осталось привязанного времени - удаляем и её
+        if db[user_id]['date'][date] == []:
+            del db[user_id]['date'][date]
+        with open(USERS_PATH, 'w') as file:
+            json.dump(db, file)

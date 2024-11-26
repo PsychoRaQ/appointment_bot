@@ -32,7 +32,8 @@ def delete_my_appointment_time_kb(width, callback):
     kb_builder = InlineKeyboardBuilder()
     buttons: list[InlineKeyboardButton] = []
     if callback.data:
-        user_id, date = callback.data.split('_delete_')
+        callback_data = callback.data.split('_delete_')
+        user_id, date = callback_data[0], callback_data[1]
         db = database_func.get_user_data_from_db(user_id)
 
         button_lst = [button for button in db['date'][date]]
@@ -42,6 +43,6 @@ def delete_my_appointment_time_kb(width, callback):
             buttons.append(InlineKeyboardButton(text='Назад', callback_data='no_one_appointment'))
 
     kb_builder.row(*buttons, width=width)
-    kb_builder.row(InlineKeyboardButton(text="Назад", callback_data='back_to_calendary'), width=1)
+    kb_builder.row(InlineKeyboardButton(text="Назад", callback_data='back_to_delete_calendary'), width=1)
 
     return kb_builder.as_markup()
