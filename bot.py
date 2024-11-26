@@ -1,7 +1,7 @@
 import asyncio
 from aiogram import Bot, Dispatcher
 from config_data import config
-from handlers import user_handlers
+from handlers import user_handlers, unregister_handlers
 from keyboards.main_menu import set_main_menu
 
 
@@ -10,7 +10,7 @@ async def main() -> None:
     bot = Bot(token=config.BOT_TOKEN)
     dp = Dispatcher()
 
-    dp.include_routers(user_handlers.router)
+    dp.include_routers(unregister_handlers.router ,user_handlers.router)
 
     # устанавливаем меню для бота
     await set_main_menu(bot)

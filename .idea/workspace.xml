@@ -5,11 +5,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="1d851286-6041-4842-8d51-66956f1dd52c" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/tg_bot_project.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bot.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/database/users.json" beforeDir="false" afterPath="$PROJECT_DIR$/database/users.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/filters/filters.py" beforeDir="false" afterPath="$PROJECT_DIR$/filters/filters.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/handlers/user_handlers.py" beforeDir="false" afterPath="$PROJECT_DIR$/handlers/user_handlers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lexicon/lexicon.py" beforeDir="false" afterPath="$PROJECT_DIR$/lexicon/lexicon.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/database_func.py" beforeDir="false" afterPath="$PROJECT_DIR$/services/database_func.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/datetime.json" beforeDir="false" afterPath="$PROJECT_DIR$/services/datetime.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/service_func.py" beforeDir="false" afterPath="$PROJECT_DIR$/services/service_func.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -37,17 +41,17 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Python.bot.executor": "Run",
-    "Python.database_func.executor": "Run",
-    "Python.lexicon.executor": "Run",
-    "Python.test.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "master"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Python.bot.executor&quot;: &quot;Run&quot;,
+    &quot;Python.database_func.executor&quot;: &quot;Run&quot;,
+    &quot;Python.lexicon.executor&quot;: &quot;Run&quot;,
+    &quot;Python.test.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;
   }
-}]]></component>
+}</component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>

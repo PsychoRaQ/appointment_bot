@@ -1,22 +1,22 @@
 
 from aiogram import F, Router
 from aiogram.filters import Command, CommandStart
-from aiogram.types import CallbackQuery, Message
+from aiogram.types import CallbackQuery, Message, ReplyKeyboardRemove
+from pyexpat.errors import messages
 
 from keyboards.calendary_kb import create_calendary_kb, create_times_kb
+from keyboards.other_kb import phone_kb
 
 from lexicon.lexicon import LEXICON, DATE_LST
 
-from filters.filters import DateTimeIsCorrect
+from filters.filters import DateTimeIsCorrect, MessageContact, UserIsRegister
 
 from services.service_func import change_datetime_status
+from services import database_func
+
 
 router = Router()
-
-
-@router.message(CommandStart())
-async def proccess_start_command(message: Message):
-    await message.answer(LEXICON['/start'])
+router.message.filter(UserIsRegister())
 
 
 @router.message(Command(commands='help'))
@@ -35,6 +35,11 @@ async def proccess_calendary_command(message: Message):
     await message.answer(text='Календарь',
                          reply_markup=keyboard)
 
+@router.message()
+async def test_other_handlers(message: Message):
+    print(message.contact)
+    await message.answer(text='123')
+
 
 @router.callback_query(F.data.in_(DATE_LST))
 async def process_date_is_confirm(callback: CallbackQuery):
@@ -50,6 +55,18 @@ async def process_datetime_is_choose(callback: CallbackQuery):
         show_alert=True,
         reply_markup=None
     )
+
+# @router.callback_query(F.data == 'no_phone')
+# async def process_add_phone(callback: CallbackQuery):
+#
+#     keyboard = phone_kb()
+#     await callback.message.edit_text(text='Добавить телефон:',
+#                                      reply_markup=keyboard)
+#
+#
+#
+
+
 
 @router.callback_query()
 async def process_datetime_is_choose(callback: CallbackQuery):
