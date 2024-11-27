@@ -5,15 +5,22 @@ from aiogram.types import CallbackQuery, Message, ReplyKeyboardRemove
 from keyboards.calendary_kb import create_calendary_kb, create_times_kb
 from keyboards.other_kb import delete_my_appointment_data_kb, delete_my_appointment_time_kb
 
-from lexicon.lexicon import LEXICON, DATE_LST
+from lexicon.lexicon import LEXICON
 
-from filters.filters import DateTimeIsCorrect, MessageContact, UserIsRegister, UserIsDeleteAppointment, \
+from filters.filters import DateTimeIsCorrect, UserIsRegister, UserIsDeleteAppointment, \
     UserIsDeleteAppointmentTime
 
 from services import database_func
 
 router = Router()
 router.message.filter(UserIsRegister())
+
+
+# Хэндлер для команды "Старт" (если пользователь уже зарегестрирован)
+@router.message(CommandStart())
+async def proccess_start_user_command_is_register(message: Message):
+    await message.delete()
+    await message.answer(LEXICON['/is_register'])
 
 
 # Хэндлер для команды "Помощь"
@@ -34,8 +41,8 @@ async def proccess_beginning_command(message: Message):
 @router.message(Command(commands='calendary'))
 async def proccess_calendary_command(message: Message):
     await message.delete()
-    keyboard = create_calendary_kb(7, **database_func.get_datetime_from_db())
-    await message.answer(text='Календарь',
+    keyboard = create_calendary_kb(5, **database_func.get_datetime_from_db())
+    await message.answer(text='Доступные даты для записи (свободные отмечены галочкой):',
                          reply_markup=keyboard)
 
 # Хэндлер для команды "Удалить запись"
@@ -43,15 +50,22 @@ async def proccess_calendary_command(message: Message):
 async def process_delete_my_appointment(message: Message):
     await message.delete()
     keyboard = delete_my_appointment_data_kb(3, str(message.chat.id))
-    await message.answer(text='Выберите дату для удаления:',
-                         reply_markup=keyboard)
+    if keyboard == 'no_one_appointment':
+        await message.answer(
+            text=LEXICON['/no_one_appointment'],
+            show_alert=True,
+            reply_markup=ReplyKeyboardRemove()
+        )
+    else:
+        await message.answer(text='Выберите дату для удаления:',
+                             reply_markup=keyboard)
 
 
 # Хэндлер для всех неопознанных сообщений
 @router.message()
 async def test_other_handlers(message: Message):
     await message.delete()
-    print('Без хэндлера')
+    print('Сообщение нераспознано')
     await message.answer(text=LEXICON['/unknown_message'])
 
 
@@ -59,7 +73,7 @@ async def test_other_handlers(message: Message):
 @router.callback_query(F.data.in_(database_func.get_datetime_from_db()))
 async def process_date_is_confirm(callback: CallbackQuery):
     keyboard = create_times_kb(5, callback)
-    await callback.message.edit_text(text='Время:',
+    await callback.message.edit_text(text=f'Доступное время записи на {callback.data}:',
                                      reply_markup=keyboard)
 
 
@@ -106,28 +120,21 @@ async def process_close_calendary(callback: CallbackQuery):
 # Хэндлер для обработки кнопки "Назад" в меню выбора времени
 @router.callback_query(F.data == 'back_to_calendary')
 async def process_back_to_calendary(callback: CallbackQuery):
-    await callback.message.delete()
     await proccess_calendary_command(callback.message)
-
 # Хэндлер для обработки кнопки "Назад" в меню выбора удаления времени записи
 @router.callback_query(F.data == 'back_to_delete_calendary')
 async def process_back_to_delete_calendary(callback: CallbackQuery):
-    await callback.message.delete()
     await process_delete_my_appointment(callback.message)
 
 # Хэндлер для обработки события "no_one_appointment" при удалении времени записи
-@router.callback_query(F.data == 'no_one_appointment')
+@router.callback_query(F.data == 'close_delete_calendary')
 async def process_back_to_calendary(callback: CallbackQuery):
     await callback.message.delete()
-    await callback.answer(
-        text=LEXICON['/no_one_appointment'],
-        show_alert=True,
-        reply_markup=ReplyKeyboardRemove()
-    )
+
 
 
 # Хэндлер для всех оставшихся колбэков, для теста
 @router.callback_query()
 async def process_datetime_is_choose(callback: CallbackQuery):
-    print(callback.data)
+    print(callback.data, 'Колбэк не расспознан')
     await callback.answer()

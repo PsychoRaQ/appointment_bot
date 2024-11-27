@@ -1,7 +1,6 @@
 from aiogram.filters import BaseFilter
 from aiogram.types import CallbackQuery
-from lexicon.lexicon import DATE_LST
-from services.database_func import check_user_is_sign,check_user_phone, get_datetime_from_db, get_user_db
+from services.database_func import check_user_is_sign,check_user_phone, get_datetime_from_db
 
 class DateTimeIsCorrect(BaseFilter):
     async def __call__(self, callback: CallbackQuery) -> bool:

@@ -2,7 +2,7 @@ from aiogram.types import KeyboardButton, InlineKeyboardButton
 from aiogram.utils.keyboard import ReplyKeyboardBuilder, InlineKeyboardBuilder
 from services import database_func
 
-
+# Кнопка для отправки телефона при регистрации в боте
 def phone_kb():
     kb_builder = ReplyKeyboardBuilder()
     contact_btn = KeyboardButton(text='Отправить телефон',
@@ -22,9 +22,10 @@ def delete_my_appointment_data_kb(width, user_id):
     for button in sorted(button_lst):
         buttons.append(InlineKeyboardButton(text=button, callback_data=f'{user_id}_delete_{button}'))
     if buttons == []:
-        buttons.append(InlineKeyboardButton(text='Назад', callback_data='no_one_appointment'))
+        return 'no_one_appointment'
 
     kb_builder.row(*buttons, width=width)
+    kb_builder.row(InlineKeyboardButton(text='Закрыть', callback_data='close_delete_calendary'))
     return kb_builder.as_markup()
 
 # Инлайн-клавиатура с ВРЕМЕНЕМ для удаления записи
