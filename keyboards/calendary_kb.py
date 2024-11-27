@@ -14,6 +14,7 @@ def create_calendary_kb(width: int, **kwargs) -> InlineKeyboardMarkup:
             buttons.append(InlineKeyboardButton(text=button, callback_data=button))
 
     kb_builder.row(*buttons, width=width)
+    kb_builder.row(InlineKeyboardButton(text='Закрыть', callback_data='close_calendary'))
 
     return kb_builder.as_markup()
 
