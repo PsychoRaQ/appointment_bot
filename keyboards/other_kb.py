@@ -1,5 +1,7 @@
-from aiogram.types import KeyboardButton, InlineKeyboardButton
+from aiogram.types import KeyboardButton, InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.utils.keyboard import ReplyKeyboardBuilder, InlineKeyboardBuilder
+
+from lexicon.lexicon import LEXICON_ADMIN_COMMANDS, LEXICON_GENERAL_ADMIN_COMMANDS
 from services import database_func
 
 # Кнопка для отправки телефона при регистрации в боте
@@ -8,7 +10,6 @@ def phone_kb():
     contact_btn = KeyboardButton(text='Отправить телефон',
                                  request_contact=True)
     kb_builder.row(contact_btn, width=1)
-
     return kb_builder.as_markup()
 
 
@@ -45,5 +46,36 @@ def delete_my_appointment_time_kb(width, callback):
 
     kb_builder.row(*buttons, width=width)
     kb_builder.row(InlineKeyboardButton(text="Назад", callback_data='back_to_delete_calendary'), width=1)
+
+    return kb_builder.as_markup()
+
+# Кнопки для админки (главный админ)
+def general_admin_kb():
+    kb_builder = ReplyKeyboardBuilder()
+    buttons_admin = [KeyboardButton(text=LEXICON_ADMIN_COMMANDS[text]) for text in LEXICON_ADMIN_COMMANDS]
+    buttons_gen_admin = [KeyboardButton(text=LEXICON_GENERAL_ADMIN_COMMANDS[text]) for text in LEXICON_GENERAL_ADMIN_COMMANDS]
+    kb_builder.row(*buttons_admin + buttons_gen_admin, width=1)
+    return kb_builder.as_markup()
+
+
+# Кнопки для админки (обычный админ)
+def admin_kb():
+    kb_builder = ReplyKeyboardBuilder()
+    buttons_admin = [KeyboardButton(text=LEXICON_ADMIN_COMMANDS[text]) for text in LEXICON_ADMIN_COMMANDS]
+    kb_builder.row(*buttons_admin, width=1)
+    return kb_builder.as_markup()
+
+# Клавиатура изменения ДАТЫ (для админа)
+def create_edit_calendary_kb(width: int, **kwargs) -> InlineKeyboardMarkup:
+    kb_builder = InlineKeyboardBuilder()
+    buttons: list[InlineKeyboardButton] = []
+    if kwargs:
+        for button, text in kwargs.items():
+            date_is_locked = [v['lock'] for i,v in text.items()]
+            date_is_locked = '✅' if False in date_is_locked else '❌'
+            buttons.append(InlineKeyboardButton(text=button + date_is_locked, callback_data=button))
+
+    kb_builder.row(*buttons, width=width)
+    kb_builder.row(InlineKeyboardButton(text='Закрыть', callback_data='close_admin_calendary'))
 
     return kb_builder.as_markup()

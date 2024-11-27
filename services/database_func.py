@@ -8,16 +8,9 @@ DATETIME_PATH = Path('database/datetime.json')
 DEFAULT_USER_DATABASE = {'name': None,
                          'phone': None,
                          'date': {},
-                         'is_admin': False
+                         'is_admin': False,
+                         'max_appointment': 2
                          }
-
-
-# n = {'1.11': {'10:00': {'lock': False, 'user': None},
-#               '11:00': {'lock': True, 'user': 'username'}
-#               },
-#      '2.11': {'10:00': {'lock': False, 'user': None},
-#               '11:00': {'lock': True, 'user': 'username'}
-#               }
 
 # СТАНДАРТНОЕ ЗАПОЛНЕНИЕ БАЗЫ ДАТ И ВРЕМЕНИ
 # def date_gen(date):
@@ -25,22 +18,25 @@ DEFAULT_USER_DATABASE = {'name': None,
 #         date = f'0{date}'
 #     return date
 #
-# datetime_gen = {f'{date_gen(str(date))}.{MONTH}':{f'{time}':{'lock':False, 'user': None}for time in DATETIME} for date in range(1,32)}
+# datetime_gen = {f'{date_gen(str(date))}.{MONTH}':{f'{time}':{'lock':True, 'user': None}for time in DATETIME} for date in range(1,32)}
 # with open(DATETIME_PATH, 'w') as file:
 #     json.dump(datetime_gen, file)
 
+
+
+
 # Проверка регистрации пользователя в боте
-def check_user_is_sign(user_id: str):
+def check_user_is_sign(user_id: str) -> bool:
     with open(USERS_PATH, 'r') as file:
         db = json.load(file)
     return user_id in db
 
+
 # Считывание всей базы данных с пользователями
-def get_user_db():
+def get_user_db() -> dict:
     with open(USERS_PATH, 'r') as file:
         db = json.load(file)
     return db
-
 
 # Если пользователь зарегистрирован, возвращаем все данные о нем
 def get_user_data_from_db(user_id: str) -> dict:
@@ -49,7 +45,7 @@ def get_user_data_from_db(user_id: str) -> dict:
             db = json.load(file)
             return db[user_id]
 
-# Если пользователь не зарегестрирован, добавляет его в базу + проверка на номер телефона
+# Если пользователь не зарегистрирован, добавляет его в базу + проверка на номер телефона
 def new_user_to_database(user_id: str, name: str) -> bool:
     if check_user_is_sign(user_id) is False:
         with open(USERS_PATH, 'r') as file:
@@ -64,7 +60,7 @@ def new_user_to_database(user_id: str, name: str) -> bool:
     else:
         return False
 
-# Если пользователь зарегестрирован, добавляет ему номер телефона
+# Если пользователь зарегистрирован, добавляет ему номер телефона
 def add_phone_to_user(user_id, phone) -> None:
     if check_user_is_sign(user_id):
         with open(USERS_PATH, 'r') as file:
@@ -73,21 +69,21 @@ def add_phone_to_user(user_id, phone) -> None:
         with open(USERS_PATH, 'w') as file:
             json.dump(db, file)
 
-# Если пользователь зарагистрирован, проверяет у него наличие номера телефона
-def check_user_phone(user_id):
+# Если пользователь зарегистрирован, проверяет у него наличие номера телефона
+def check_user_phone(user_id) -> bool | str:
     if check_user_is_sign(user_id):
         with open(USERS_PATH, 'r') as file:
             db = json.load(file)
         return db[user_id]['phone']
 
 # Получение словаря с датами и временем из базы
-def get_datetime_from_db():
+def get_datetime_from_db() -> dict:
     with open(DATETIME_PATH, 'r') as file:
             db = json.load(file)
     return db
 
 # Изменение статуса в базе данных (занять дату/время)
-async def change_datetime_status(user_id, datetime, status) -> None:
+def change_datetime_status(user_id, datetime, status) -> None | Exception:
     # Записываем дату в базу с датами
     db = get_datetime_from_db()
 
@@ -97,14 +93,12 @@ async def change_datetime_status(user_id, datetime, status) -> None:
         print(e)
         return e
 
-    # Блок для записи даты (если свободна)
-    if db[date][time]['lock'] is False:
-        db[date][time]['lock'] = True
+    # запись даты (если свободна)
+    if db[date][time]['user'] is None:
         db[date][time]['user'] = user_id
 
-    # Блок для очистки даты (если занята)
-    elif db[date][time]['lock'] is True:
-        db[date][time]['lock'] = False
+    #  очистка даты (если занята)
+    else:
         db[date][time]['user'] = None
 
     with open(DATETIME_PATH, 'w') as file:
@@ -134,3 +128,57 @@ async def change_datetime_status(user_id, datetime, status) -> None:
             del db[user_id]['date'][date]
         with open(USERS_PATH, 'w') as file:
             json.dump(db, file)
+
+# проверяем есть ли админка у пользователя, если да - возвращаем "уровень" админки
+def user_is_admin(user_id) -> int | bool:
+    return get_user_data_from_db(user_id)['is_admin']
+
+
+def admin_change_datetime_status(user_id, datetime) -> None | Exception:
+    # Записываем дату в базу с датами
+    db = get_datetime_from_db()
+
+    try:
+        datetime, is_admin = datetime.split('_')
+        date, time = datetime.split(',')
+    except Exception as e:
+        print(e)
+        return e
+
+    # Изменяем "доступность" даты на противоположную
+    if db[date][time]['lock'] is True:
+        db[date][time]['lock'] = False
+    #  очистка даты (если занята)
+    else:
+        db[date][time]['lock'] = True
+
+    user = db[date][time]['user']
+
+    if user is not None:
+        user = db[date][time]['user']
+        db[date][time]['user'] = None
+
+    with open(DATETIME_PATH, 'w') as file:
+        json.dump(db, file)
+
+    if user:
+        # Очищаем дату из профиля пользователя
+        with open(USERS_PATH, 'r') as file:
+            db = json.load(file)
+        # Удаляем время из нужной даты
+        db[user]['date'][date].remove(time)
+        # Если у даты больше не осталось привязанного времени - удаляем и её
+        if db[user]['date'][date] == []:
+            del db[user]['date'][date]
+        with open(USERS_PATH, 'w') as file:
+            json.dump(db, file)
+
+
+
+
+
+
+
+
+
+

@@ -1,22 +1,19 @@
 from aiogram import F, Router
 from aiogram.filters import Command, CommandStart
 from aiogram.types import CallbackQuery, Message, ReplyKeyboardRemove
-
 from keyboards.calendary_kb import create_calendary_kb, create_times_kb
 from keyboards.other_kb import delete_my_appointment_data_kb, delete_my_appointment_time_kb
-
 from lexicon.lexicon import LEXICON
-
 from filters.filters import DateTimeIsCorrect, UserIsRegister, UserIsDeleteAppointment, \
     UserIsDeleteAppointmentTime
+from services import database_func, service_func
 
-from services import database_func
 
 router = Router()
 router.message.filter(UserIsRegister())
 
 
-# Хэндлер для команды "Старт" (если пользователь уже зарегестрирован)
+# Хэндлер для команды "Старт" (если пользователь уже зарегистрирован)
 @router.message(CommandStart())
 async def proccess_start_user_command_is_register(message: Message):
     await message.delete()
@@ -41,9 +38,19 @@ async def proccess_beginning_command(message: Message):
 @router.message(Command(commands='calendary'))
 async def proccess_calendary_command(message: Message):
     await message.delete()
-    keyboard = create_calendary_kb(5, **database_func.get_datetime_from_db())
+    keyboard = create_calendary_kb(5,str(message.from_user.id), **database_func.get_datetime_from_db())
     await message.answer(text='Доступные даты для записи (свободные отмечены галочкой):',
                          reply_markup=keyboard)
+
+
+# Хэндлер для команды "Мои записи"
+@router.message(Command(commands='my_appointment'))
+async def process__my_appointment(message: Message):
+    await message.delete()
+    text = service_func.get_user_appointment(str(message.from_user.id))
+    await message.answer(text=text,
+                         reply_markup=None)
+
 
 # Хэндлер для команды "Удалить запись"
 @router.message(Command(commands='delete_my_appointment'))
@@ -67,74 +74,3 @@ async def test_other_handlers(message: Message):
     await message.delete()
     print('Сообщение нераспознано')
     await message.answer(text=LEXICON['/unknown_message'])
-
-
-# Хэндлер для коллбэков после выбора ДАТЫ на инлайн-клавиатуре
-@router.callback_query(F.data.in_(database_func.get_datetime_from_db()))
-async def process_date_is_confirm(callback: CallbackQuery):
-    keyboard = create_times_kb(5, callback)
-    await callback.message.edit_text(text=f'Доступное время записи на {callback.data}:',
-                                     reply_markup=keyboard)
-
-
-# Хэндлер для коллбэков после выбора ВРЕМЕНИ на инлайн-клавиатуре
-@router.callback_query(DateTimeIsCorrect())
-async def process_datetime_is_choose(callback: CallbackQuery):
-    print(callback.message.chat.id)
-    await database_func.change_datetime_status(str(callback.message.chat.id), callback.data, 'add')
-    await callback.message.edit_text(
-        text=f'Отлично! Вы записаны на {callback.data}!',
-        show_alert=True,
-        reply_markup=None
-    )
-
-# Хэндлер для колбэков после выбора ДАТЫ удаления записи
-@router.callback_query(UserIsDeleteAppointment())
-async def process_delete_date_appointment(callback: CallbackQuery):
-    print(callback.data)
-    keyboard = delete_my_appointment_time_kb(4, callback)
-    await callback.message.edit_text(
-        text=f'Выберите время:',
-        reply_markup=keyboard
-    )
-
-# Хэндлер для колбэков после выбора ВРЕМЕНИ удаления записи
-@router.callback_query(UserIsDeleteAppointmentTime())
-async def process_delete_time_appointment(callback: CallbackQuery):
-    print(callback.message.chat.id)
-
-    user_id, cb_date, cb_time = callback.data.split('_delete_')
-
-    await database_func.change_datetime_status(user_id,f'{cb_date},{cb_time}', 'clear')
-    await callback.message.edit_text(
-        text=f'Вы удалили запись на {cb_date}, {cb_time}!',
-        show_alert=True,
-        reply_markup=None
-    )
-
-# Хэндлер для обработки кнопки "Закрыть" в меню выбора ДАТЫ КАЛЕНДАРЯ
-@router.callback_query(F.data == 'close_calendary')
-async def process_close_calendary(callback: CallbackQuery):
-    await callback.message.delete()
-
-# Хэндлер для обработки кнопки "Назад" в меню выбора времени
-@router.callback_query(F.data == 'back_to_calendary')
-async def process_back_to_calendary(callback: CallbackQuery):
-    await proccess_calendary_command(callback.message)
-# Хэндлер для обработки кнопки "Назад" в меню выбора удаления времени записи
-@router.callback_query(F.data == 'back_to_delete_calendary')
-async def process_back_to_delete_calendary(callback: CallbackQuery):
-    await process_delete_my_appointment(callback.message)
-
-# Хэндлер для обработки события "no_one_appointment" при удалении времени записи
-@router.callback_query(F.data == 'close_delete_calendary')
-async def process_back_to_calendary(callback: CallbackQuery):
-    await callback.message.delete()
-
-
-
-# Хэндлер для всех оставшихся колбэков, для теста
-@router.callback_query()
-async def process_datetime_is_choose(callback: CallbackQuery):
-    print(callback.data, 'Колбэк не расспознан')
-    await callback.answer()
