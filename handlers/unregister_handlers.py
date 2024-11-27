@@ -14,9 +14,16 @@ router = Router()
 
 @router.message(CommandStart())
 async def proccess_start_command(message: Message):
-    keyboard = phone_kb()
+    if database_func.new_user_to_database(str(message.from_user.id), message.from_user.first_name):
+        keyboard = phone_kb()
+        text = LEXICON['/start']
+    ############################
+    else: # Необязательный кусок?
+        keyboard = ReplyKeyboardRemove()
+        text = f'{message.from_user.first_name}, {LEXICON['/is_register']}'
+        ########################
     await message.delete()
-    await message.answer(text=LEXICON['/start'],
+    await message.answer(text=text,
                          reply_markup=keyboard
                          )
 

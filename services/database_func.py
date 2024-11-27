@@ -20,9 +20,14 @@ DEFAULT_USER_DATABASE = {'name': None,
 #               }
 
 # СТАНДАРТНОЕ ЗАПОЛНЕНИЕ БАЗЫ ДАТ И ВРЕМЕНИ
-# datetime_gen = {f'{date}.{MONTH}':{f'{time}':{'lock':False, 'user': None}for time in DATETIME} for date in range(1,32)}
+# def date_gen(date):
+#     if len(date) == 1:
+#         date = f'0{date}'
+#     return date
+#
+# datetime_gen = {f'{date_gen(str(date))}.{MONTH}':{f'{time}':{'lock':False, 'user': None}for time in DATETIME} for date in range(1,32)}
 # with open(DATETIME_PATH, 'w') as file:
-#      json.dump(datetime_gen, file)
+#     json.dump(datetime_gen, file)
 
 # Проверка регистрации пользователя в боте
 def check_user_is_sign(user_id: str):
