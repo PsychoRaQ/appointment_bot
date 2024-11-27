@@ -1,7 +1,6 @@
 from aiogram import F, Router
 from aiogram.filters import Command, CommandStart
 from aiogram.types import CallbackQuery, Message, ReplyKeyboardRemove
-from pyexpat.errors import messages
 
 from keyboards.calendary_kb import create_calendary_kb, create_times_kb
 from keyboards.other_kb import delete_my_appointment_data_kb, delete_my_appointment_time_kb
@@ -20,18 +19,21 @@ router.message.filter(UserIsRegister())
 # Хэндлер для команды "Помощь"
 @router.message(Command(commands='help'))
 async def proccess_help_command(message: Message):
+    await message.delete()
     await message.answer(LEXICON['/help'])
 
 
 # Хэндлер для команды "Начало работы"
 @router.message(Command(commands='beginning'))
 async def proccess_beginning_command(message: Message):
+    await message.delete()
     await message.answer(LEXICON['/beginning'])
 
 
 # Хэндлер для отображения календаря (и дальнейшая запись)
 @router.message(Command(commands='calendary'))
 async def proccess_calendary_command(message: Message):
+    await message.delete()
     keyboard = create_calendary_kb(7, **database_func.get_datetime_from_db())
     await message.answer(text='Календарь',
                          reply_markup=keyboard)
@@ -39,6 +41,7 @@ async def proccess_calendary_command(message: Message):
 # Хэндлер для команды "Удалить запись"
 @router.message(Command(commands='delete_my_appointment'))
 async def process_delete_my_appointment(message: Message):
+    await message.delete()
     keyboard = delete_my_appointment_data_kb(3, str(message.chat.id))
     await message.answer(text='Выберите дату для удаления:',
                          reply_markup=keyboard)
@@ -47,6 +50,7 @@ async def process_delete_my_appointment(message: Message):
 # Хэндлер для всех неопознанных сообщений
 @router.message()
 async def test_other_handlers(message: Message):
+    await message.delete()
     print('Без хэндлера')
     await message.answer(text=LEXICON['/unknown_message'])
 
@@ -94,6 +98,11 @@ async def process_delete_time_appointment(callback: CallbackQuery):
         reply_markup=None
     )
 
+# Хэндлер для обработки кнопки "Закрыть" в меню выбора ДАТЫ КАЛЕНДАРЯ
+@router.callback_query(F.data == 'close_calendary')
+async def process_close_calendary(callback: CallbackQuery):
+    await callback.message.delete()
+
 # Хэндлер для обработки кнопки "Назад" в меню выбора времени
 @router.callback_query(F.data == 'back_to_calendary')
 async def process_back_to_calendary(callback: CallbackQuery):
@@ -113,7 +122,7 @@ async def process_back_to_calendary(callback: CallbackQuery):
     await callback.answer(
         text=LEXICON['/no_one_appointment'],
         show_alert=True,
-        reply_markup=None
+        reply_markup=ReplyKeyboardRemove()
     )
 
 

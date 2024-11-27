@@ -22,6 +22,7 @@ async def proccess_start_command(message: Message):
         keyboard = ReplyKeyboardRemove()
         text = f'{message.from_user.first_name}, {LEXICON['/is_register']}'
         ########################
+    await message.delete()
     await message.answer(text=text,
                          reply_markup=keyboard
                          )
@@ -29,11 +30,13 @@ async def proccess_start_command(message: Message):
 @router.message(MessageContact())
 async def process_add_contact(message: Message):
     database_func.add_phone_to_user(str(message.from_user.id), message.contact.phone_number)
+    await message.delete()
     await message.answer(text=LEXICON['/phone_is_add'],
                          reply_markup=ReplyKeyboardRemove())
 
 @router.message()
 async def other_unregister_message(message: Message):
+    await message.delete()
     keyboard = phone_kb()
     await message.answer(text=LEXICON['/unregister_message'],
                          reply_markup=keyboard)
