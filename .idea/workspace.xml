@@ -5,14 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="1d851286-6041-4842-8d51-66956f1dd52c" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/tg_bot_project.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/tg_bot_project.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/database/datetime.json" beforeDir="false" afterPath="$PROJECT_DIR$/database/datetime.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/database/users.json" beforeDir="false" afterPath="$PROJECT_DIR$/database/users.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/filters/filters.py" beforeDir="false" afterPath="$PROJECT_DIR$/filters/filters.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/handlers/user_handlers.py" beforeDir="false" afterPath="$PROJECT_DIR$/handlers/user_handlers.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/keyboards/other_kb.py" beforeDir="false" afterPath="$PROJECT_DIR$/keyboards/other_kb.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lexicon/lexicon.py" beforeDir="false" afterPath="$PROJECT_DIR$/lexicon/lexicon.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/database_func.py" beforeDir="false" afterPath="$PROJECT_DIR$/services/database_func.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -29,6 +25,18 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
+  "lastFilter": {
+    "state": "OPEN",
+    "assignee": "PsychoRaQ"
+  }
+}]]></component>
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/PsychoRaQ/tg_bot_2.0.git",
+    "accountId": "c5d90462-e73f-4fdd-a0e3-201c8eea8fb0"
+  }
+}]]></component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 4
 }</component>
@@ -54,7 +62,7 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-python-sdk-fb887030ada0-aa17d162503b-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-243.21565.199" />
+        <option value="bundled-python-sdk-f5635417b835-31b6be0877a2-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-241.18968.29" />
       </set>
     </attachedChunks>
   </component>
