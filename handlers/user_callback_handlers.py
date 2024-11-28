@@ -15,7 +15,7 @@ router.message.filter(UserIsRegister())
 # Хэндлер для коллбэков после выбора ДАТЫ на инлайн-клавиатуре
 @router.callback_query(F.data.in_(database_func.get_datetime_from_db()))
 async def process_date_is_confirm(callback: CallbackQuery):
-    keyboard = create_times_kb(5, callback, str(callback.message.chat.id))
+    keyboard = create_times_kb(5, callback)
     await callback.message.edit_text(text=f'Доступное время записи на {callback.data}:',
                                      reply_markup=keyboard)
 

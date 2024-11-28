@@ -129,11 +129,30 @@ def change_datetime_status(user_id, datetime, status) -> None | Exception:
         with open(USERS_PATH, 'w') as file:
             json.dump(db, file)
 
+# Проверка на максимальное количество записей у пользователя
+# True - записаться нельзя, False - записаться можно
+def user_max_appointment(user_id) -> bool:
+    db = get_user_data_from_db(user_id)
+    max_appointment = db['max_appointment']
+    datetime_lst = []
+    if db['date'] == {}:
+        return False
+    for i in db['date'].values():
+        datetime_lst += i
+    return len(datetime_lst) >= max_appointment
+
+#возвращает максимально доступное количество записей у пользователя
+def get_user_max_appointment(user_id) -> int:
+    db = get_user_data_from_db(user_id)
+    max_appointment = db['max_appointment']
+    return max_appointment
+
+
 # проверяем есть ли админка у пользователя, если да - возвращаем "уровень" админки
 def user_is_admin(user_id) -> int | bool:
     return get_user_data_from_db(user_id)['is_admin']
 
-
+# Админ в функции /edit_calendary меняет свое расписание | изменяем статус 'lock' у даты/времени
 def admin_change_datetime_status(user_id, datetime) -> None | Exception:
     # Записываем дату в базу с датами
     db = get_datetime_from_db()

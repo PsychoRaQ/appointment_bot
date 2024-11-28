@@ -1,23 +1,23 @@
 from aiogram import F, Router
 from aiogram.filters import Command, CommandStart
-from aiogram.types import CallbackQuery, Message, ReplyKeyboardRemove
+from aiogram.types import Message, ReplyKeyboardRemove
 from keyboards.calendary_kb import create_calendary_kb, create_times_kb
 from keyboards.other_kb import delete_my_appointment_data_kb, delete_my_appointment_time_kb
 from lexicon.lexicon import LEXICON
 from filters.filters import (DateTimeIsCorrect, UserIsRegister, UserIsDeleteAppointment,
-    UserIsDeleteAppointmentTime)
+                             UserIsDeleteAppointmentTime, UserIsAdmin)
 from services import database_func, service_func
-
 
 router = Router()
 router.message.filter(UserIsRegister())
 
 
-# Хэндлер для команды "Старт" (если пользователь уже зарегистрирован)
+# Хэндлер для команды "Старт" (если пользователь уже зарегистрирован и не админ)
 @router.message(CommandStart())
 async def proccess_start_user_command_is_register(message: Message):
     await message.delete()
-    await message.answer(LEXICON['/is_register'])
+    await message.answer(LEXICON['/is_register'],
+                         keyboard=ReplyKeyboardRemove())
 
 
 # Хэндлер для команды "Помощь"
@@ -38,9 +38,18 @@ async def proccess_beginning_command(message: Message):
 @router.message(Command(commands='calendary'))
 async def proccess_calendary_command(message: Message):
     await message.delete()
-    keyboard = create_calendary_kb(5,str(message.chat.id), **database_func.get_datetime_from_db())
-    await message.answer(text='Доступные даты для записи (свободные отмечены галочкой):',
-                         reply_markup=keyboard)
+    if database_func.user_max_appointment(str(message.chat.id)):
+        await message.answer(text=LEXICON['/user_is_max_appointment'],
+                             reply_markup=ReplyKeyboardRemove())
+    else:
+        keyboard = create_calendary_kb(5, **database_func.get_datetime_from_db())
+        if keyboard:
+            await message.answer(text=LEXICON['/user_is_not_max_appointment'],
+                                 reply_markup=keyboard)
+        else:
+            await message.answer(text=LEXICON['/no_one_available_date'],
+                                 show_alert=True,
+                                 reply_markup=ReplyKeyboardRemove())
 
 
 # Хэндлер для команды "Мои записи"
@@ -64,7 +73,7 @@ async def process_delete_my_appointment(message: Message):
             reply_markup=ReplyKeyboardRemove()
         )
     else:
-        await message.answer(text='Выберите дату для удаления:',
+        await message.answer(text=LEXICON['/choose_date_to_delete'],
                              reply_markup=keyboard)
 
 
