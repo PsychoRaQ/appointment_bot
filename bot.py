@@ -1,11 +1,11 @@
 import asyncio
-from aiogram import Bot, Dispatcher
-from config_data import config
+from aiogram import Dispatcher
 from handlers import (user_handlers, unregister_handlers, general_admin_handlers, admin_handlers, user_callback_handlers)
 from keyboards.main_menu import set_main_menu
+from config_data import bot_init
 
 async def main() -> None:
-    bot = Bot(token=config.BOT_TOKEN)
+    bot = bot_init.bot
     dp = Dispatcher()
 
     # Подключаем роутеры
@@ -25,7 +25,8 @@ if __name__ == '__main__':
 
 
 # ######################
-# УДАЛИТЬ ПРИНТЫ
-# ИСПРАВИТЬ КНОПКИ НАЗАД И ЗАКРЫТЬ
-# ОТДЕЛИТЬ КАЛЕНДАРИ У АДМИНА
-# ДЕЛАТЬ УВЕДОМЛЕНИЕ ПОЛЬЗОВАТЕЛЮ ЕСЛИ ЕГО ЗАПИСЬ ОТМЕНЕНА
+# ОТДЕЛИТЬ КАЛЕНДАРИ У АДМИНА (просто отделил, без функционала)
+# ПОДКЛЮЧИТЬ БАЗУ ДАННЫХ ХОТЬ КАК НИБУДЬ
+# СДЕЛАТЬ ВОЗМОЖНОСТЬ ИЗМЕНЕНИЯ МАКСИМАЛЬНОГО КОЛИЧЕСТВА ЗАПИСЕЙ У ПОЛЬЗОВАТЕЛЯ
+# ОГРАНИЧИТЬ КОЛИЧЕСТВО ЗАПИСЕЙ У ПОЛЬЗОВАТЕЛЯ
+# СДЕЛАТЬ АДМИНУ ВЫВОД ВСЕХ ПОЛЬЗОВАТЕЛЕЙ И ВЕСЬ ФУНКЦИОНАЛ С ЭТИМ СВЯЗАННЫЙ

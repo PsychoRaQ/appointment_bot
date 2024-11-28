@@ -8,9 +8,10 @@ from services import database_func
 def phone_kb():
     kb_builder = ReplyKeyboardBuilder()
     contact_btn = KeyboardButton(text='Отправить телефон',
-                                 request_contact=True)
+                                 request_contact=True,
+                                 )
     kb_builder.row(contact_btn, width=1)
-    return kb_builder.as_markup()
+    return kb_builder.as_markup(resize_keyboard=True)
 
 
 # Инлайн-клавиатура с ДАТАМИ для удаления записи
@@ -55,7 +56,7 @@ def general_admin_kb():
     buttons_admin = [KeyboardButton(text=LEXICON_ADMIN_COMMANDS[text]) for text in LEXICON_ADMIN_COMMANDS]
     buttons_gen_admin = [KeyboardButton(text=LEXICON_GENERAL_ADMIN_COMMANDS[text]) for text in LEXICON_GENERAL_ADMIN_COMMANDS]
     kb_builder.row(*buttons_admin + buttons_gen_admin, width=1)
-    return kb_builder.as_markup()
+    return kb_builder.as_markup(resize_keyboard=True, one_time_keyboard=True)
 
 
 # Кнопки для админки (обычный админ)
@@ -63,7 +64,7 @@ def admin_kb():
     kb_builder = ReplyKeyboardBuilder()
     buttons_admin = [KeyboardButton(text=LEXICON_ADMIN_COMMANDS[text]) for text in LEXICON_ADMIN_COMMANDS]
     kb_builder.row(*buttons_admin, width=1)
-    return kb_builder.as_markup()
+    return kb_builder.as_markup(resize_keyboard=True)
 
 # Клавиатура изменения ДАТЫ (для админа)
 def create_edit_calendary_kb(width: int, **kwargs) -> InlineKeyboardMarkup:

@@ -80,5 +80,5 @@ async def process_back_to_calendary(callback: CallbackQuery):
 # Хэндлер для всех оставшихся колбэков, для теста
 @router.callback_query()
 async def process_datetime_is_choose(callback: CallbackQuery):
-    print(callback.data, 'Колбэк не расспознан')
+    print(callback.data, 'Колбэк не распознан')
     await callback.answer()

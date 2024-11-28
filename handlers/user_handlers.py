@@ -4,8 +4,8 @@ from aiogram.types import CallbackQuery, Message, ReplyKeyboardRemove
 from keyboards.calendary_kb import create_calendary_kb, create_times_kb
 from keyboards.other_kb import delete_my_appointment_data_kb, delete_my_appointment_time_kb
 from lexicon.lexicon import LEXICON
-from filters.filters import DateTimeIsCorrect, UserIsRegister, UserIsDeleteAppointment, \
-    UserIsDeleteAppointmentTime
+from filters.filters import (DateTimeIsCorrect, UserIsRegister, UserIsDeleteAppointment,
+    UserIsDeleteAppointmentTime)
 from services import database_func, service_func
 
 
@@ -38,7 +38,7 @@ async def proccess_beginning_command(message: Message):
 @router.message(Command(commands='calendary'))
 async def proccess_calendary_command(message: Message):
     await message.delete()
-    keyboard = create_calendary_kb(5,str(message.from_user.id), **database_func.get_datetime_from_db())
+    keyboard = create_calendary_kb(5,str(message.chat.id), **database_func.get_datetime_from_db())
     await message.answer(text='Доступные даты для записи (свободные отмечены галочкой):',
                          reply_markup=keyboard)
 
@@ -72,5 +72,5 @@ async def process_delete_my_appointment(message: Message):
 @router.message()
 async def test_other_handlers(message: Message):
     await message.delete()
-    print('Сообщение нераспознано')
+    print('Сообщение не распознано')
     await message.answer(text=LEXICON['/unknown_message'])

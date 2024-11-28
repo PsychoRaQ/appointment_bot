@@ -172,6 +172,7 @@ def admin_change_datetime_status(user_id, datetime) -> None | Exception:
             del db[user]['date'][date]
         with open(USERS_PATH, 'w') as file:
             json.dump(db, file)
+    return user
 
 
 

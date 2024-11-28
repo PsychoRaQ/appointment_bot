@@ -2,16 +2,20 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from services.database_func import get_datetime_from_db, user_is_admin
 
+
+# Функционал: у админа для создания клавиатуры редактирования расписания
+# У пользователя для записи на конкретную дату и время
+
 # Создание инлайн-клавиатуры календаря (даты)
-def create_calendary_kb(width: int, user_id:str, **kwargs) -> InlineKeyboardMarkup:
+def create_calendary_kb(width: int, user_id: str, **kwargs) -> InlineKeyboardMarkup:
     kb_builder = InlineKeyboardBuilder()
     buttons: list[InlineKeyboardButton] = []
     if kwargs:
         for button, text in kwargs.items():
-            date_is_locked = [v['lock'] for i,v in text.items()]
+            date_is_locked = [v['lock'] for i, v in text.items()]
             date_is_locked = '✅' if False in date_is_locked else '❌'
             if user_is_admin(user_id):
-                buttons.append(InlineKeyboardButton(text=button + date_is_locked, callback_data=button+'_admin'))
+                buttons.append(InlineKeyboardButton(text=button + date_is_locked, callback_data=button + '_admin'))
             else:
                 if date_is_locked == '✅':
                     buttons.append(InlineKeyboardButton(text=button, callback_data=button))
@@ -27,7 +31,6 @@ def create_times_kb(width: int, callback, user_id: str) -> InlineKeyboardMarkup:
     kb_builder = InlineKeyboardBuilder()
     buttons: list[InlineKeyboardButton] = []
     db = get_datetime_from_db()
-    print(callback)
     try:
         cb_date, is_admin = callback.data.split('_')
         if ',' in cb_date:
@@ -40,10 +43,10 @@ def create_times_kb(width: int, callback, user_id: str) -> InlineKeyboardMarkup:
         for button, text in db[cb_date].items():
             date_is_locked = db[cb_date][button]['lock']
             date_is_locked = '✅' if date_is_locked is False else '❌'
-            buttons.append(InlineKeyboardButton(text=button + date_is_locked, callback_data=f'{cb_date},{button}_admin'))
+            buttons.append(
+                InlineKeyboardButton(text=button + date_is_locked, callback_data=f'{cb_date},{button}_admin'))
     else:
         back_button = 'back_to_calendary'
-        print('ты тут')
         for button, text in db[callback.data].items():
             if db[callback.data][button]['lock'] is False:
                 buttons.append(InlineKeyboardButton(text=button, callback_data=f'{callback.data},{button}'))
