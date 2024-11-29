@@ -5,7 +5,7 @@ from aiogram.types import Message
 from filters.filters import UserIsGeneralAdmin
 from lexicon.lexicon import LEXICON_GENERAL_ADMIN
 
-from keyboards.other_kb import general_admin_kb
+from keyboards.admin_calendary_kb import general_admin_kb
 
 router = Router()
 router.message.filter(UserIsGeneralAdmin())

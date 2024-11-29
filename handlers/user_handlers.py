@@ -1,20 +1,18 @@
 from aiogram import F, Router
 from aiogram.filters import Command, CommandStart
 from aiogram.types import Message, ReplyKeyboardRemove
-from keyboards.calendary_kb import create_calendary_kb, create_times_kb
-from keyboards.other_kb import delete_my_appointment_data_kb, delete_my_appointment_time_kb
+from keyboards.user_calendary_kb import create_calendary_kb, delete_my_appointment_data_kb
 from lexicon.lexicon import LEXICON
-from filters.filters import (DateTimeIsCorrect, UserIsRegister, UserIsDeleteAppointment,
-                             UserIsDeleteAppointmentTime, UserIsAdmin)
+from filters.filters import UserIsRegister
 from services import database_func, service_func
 
 router = Router()
 router.message.filter(UserIsRegister())
 
 
-# Хэндлер для команды "Старт" (если пользователь уже зарегистрирован и не админ)
+# Хэндлер для команды "Старт" (пользователь уже зарегистрирован и не админ)
 @router.message(CommandStart())
-async def proccess_start_user_command_is_register(message: Message):
+async def proccess_start_command_user_is_register(message: Message):
     await message.delete()
     await message.answer(LEXICON['/is_register'],
                          keyboard=ReplyKeyboardRemove())
@@ -38,6 +36,7 @@ async def proccess_beginning_command(message: Message):
 @router.message(Command(commands='calendary'))
 async def proccess_calendary_command(message: Message):
     await message.delete()
+
     if database_func.user_max_appointment(str(message.chat.id)):
         await message.answer(text=LEXICON['/user_is_max_appointment'],
                              reply_markup=ReplyKeyboardRemove())
@@ -82,4 +81,5 @@ async def process_delete_my_appointment(message: Message):
 async def test_other_handlers(message: Message):
     await message.delete()
     print('Сообщение не распознано')
+
     await message.answer(text=LEXICON['/unknown_message'])

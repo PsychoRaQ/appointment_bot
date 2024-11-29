@@ -1,8 +1,6 @@
 import json
 from pathlib import Path
-import sqlite3
 import config_data.config
-from services import service_func
 
 USERS_PATH = Path('database/users.json')
 DATETIME_PATH = Path('database/datetime.json')
@@ -203,82 +201,4 @@ def admin_change_datetime_status(datetime) -> None | Exception:
         with open(USERS_PATH, 'w') as file:
             json.dump(db, file)
     return user
-
-
-########################
-
-
-# Добавляем пользователя в БД (если его там нет)
-def new_user_to_db(user_id, username, phone) -> bool:
-    connection = sqlite3.connect(DATABASE_PATH)
-    try:
-        cursor = connection.cursor()
-        cursor.execute(f'INSERT INTO Users(user_id, username, phone) Values(?,?,?)', (user_id, username, phone))
-        connection.commit()
-        connection.close()
-        return True
-    except Exception as e:
-        print(e)
-        connection.close()
-        return False
-
-# Проверяем наличие пользователя в БД
-def user_is_sign(user_id) -> bool:
-    connection = sqlite3.connect(DATABASE_PATH)
-    try:
-        cursor = connection.cursor()
-        cursor.execute(f'SELECT user_id FROM Users WHERE user_id = ?', (user_id,))
-        result = cursor.fetchone()
-        connection.close()
-        return user_id in result
-    except Exception as e:
-        print(e)
-        connection.close()
-        return False
-
-# Возвращаем все данные пользователя по его user_id
-def get_userdata(user_id) -> list | None:
-    connection = sqlite3.connect(DATABASE_PATH)
-    try:
-        cursor = connection.cursor()
-        cursor.execute(f'SELECT * FROM Users WHERE user_id = ?', (user_id,))
-        result = cursor.fetchall()
-        connection.close()
-        return result
-    except Exception as e:
-        print(e)
-        connection.close()
-        return None
-
-# Добавляет в таблицу Date все даты из указанного месяца
-def add_new_month_to_db(month: int) -> bool:
-    connection = sqlite3.connect(DATABASE_PATH)
-    try:
-        cursor = connection.cursor()
-        cursor.executemany('INSERT INTO Dates(Date) Values (?)', zip(service_func.create_date_list(month)))
-        connection.commit()
-        connection.close()
-        return True
-    except Exception as e:
-        print(e)
-        connection.close()
-        return False
-
-# Добавляет в таблицу Times время в диапазоне minute_range. (00:00 - 00:15 - 00:30 - ... - 23:45)
-def add_new_time_to_db(minute_range: int) -> bool:
-    connection = sqlite3.connect(DATABASE_PATH)
-    try:
-        cursor = connection.cursor()
-        cursor.executemany('INSERT INTO Times(Time) Values (?)', zip(service_func.create_time_in_range_list(minute_range)))
-        connection.commit()
-        connection.close()
-        return True
-    except Exception as e:
-        print(e)
-        connection.close()
-        return False
-
-
-
-
 

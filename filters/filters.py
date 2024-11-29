@@ -1,6 +1,6 @@
 from aiogram.filters import BaseFilter
 from aiogram.types import CallbackQuery
-from services.database_func import (check_user_is_sign,check_user_phone, get_datetime_from_db, user_is_admin)
+from services.database_func import (user_is_sign,check_user_phone, get_datetime_from_db, user_is_admin)
 
 class DateTimeIsCorrect(BaseFilter):
     async def __call__(self, callback: CallbackQuery) -> bool:
@@ -11,6 +11,7 @@ class DateTimeIsCorrect(BaseFilter):
         except:
             return False
 
+# Проверяем наличие "контакта" в сообщении
 class MessageContact(BaseFilter):
     async def __call__(self, message) -> bool:
         return message.contact
@@ -18,7 +19,7 @@ class MessageContact(BaseFilter):
 
 class UserIsRegister(BaseFilter):
     async def __call__(self, message) -> bool:
-        return check_user_is_sign(str(message.from_user.id)) and check_user_phone(str(message.from_user.id))
+        return user_is_sign(message.from_user.id)
 
 
 class UserIsDeleteAppointment(BaseFilter):
@@ -39,11 +40,11 @@ class UserIsDeleteAppointmentTime(BaseFilter):
 
 class UserIsGeneralAdmin(BaseFilter):
     async def __call__(self, message) -> bool:
-        return check_user_is_sign(str(message.from_user.id)) and user_is_admin(str(message.from_user.id)) == 2
+        return user_is_sign(str(message.from_user.id)) and user_is_admin(str(message.from_user.id)) == 2
 
 class UserIsAdmin(BaseFilter):
     async def __call__(self, message) -> bool:
-        return check_user_is_sign(str(message.from_user.id)) and user_is_admin(str(message.from_user.id))
+        return user_is_sign(str(message.from_user.id)) and user_is_admin(str(message.from_user.id))
 
 class AdminChooseDate(BaseFilter):
     async def __call__(self, callback) -> bool:

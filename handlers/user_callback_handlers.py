@@ -1,12 +1,10 @@
 from aiogram import F, Router
 from aiogram.types import CallbackQuery
-from keyboards.calendary_kb import create_times_kb
-from keyboards.other_kb import delete_my_appointment_time_kb
+from keyboards.user_calendary_kb import create_times_kb, delete_my_appointment_time_kb
 from filters.filters import (DateTimeIsCorrect, UserIsRegister, UserIsDeleteAppointment,
-    UserIsDeleteAppointmentTime)
+                             UserIsDeleteAppointmentTime)
 from services import database_func
 from handlers import user_handlers
-
 
 router = Router()
 router.message.filter(UserIsRegister())
@@ -45,9 +43,9 @@ async def process_delete_date_appointment(callback: CallbackQuery):
 @router.callback_query(UserIsDeleteAppointmentTime())
 async def process_delete_time_appointment(callback: CallbackQuery):
     user_id, cb_date, cb_time = callback.data.split('_delete_')
-    database_func.change_datetime_status(user_id,f'{cb_date},{cb_time}', 'clear')
+    database_func.change_datetime_status(user_id, f'{cb_date},{cb_time}', 'clear')
     await callback.message.edit_text(
-        text=f'Вы удалили запись на {cb_date}, {cb_time}!',
+        text=f'Вы отменили свою запись на {cb_date}, {cb_time}!',
         show_alert=True,
         reply_markup=None
     )
