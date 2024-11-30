@@ -3,26 +3,29 @@
 from config_data.bot_init import bot
 import datetime
 
-# получение актуальных записей из профиля пользователя
-def get_user_appointment(user_id: str) -> str:
-    # db = get_user_data_from_db(user_id)['date']
-    # if db != {}:
-    #     date_lst = []
-    #
-    #     for date, time in db.items():
-    #         time = ', '.join(sorted(time))
-    #         text = f'{date} - {time}\n'
-    #         date_lst.append(text)
-    #
-    #     date_lst.sort()
-    #     date_lst.append(f'\n{LEXICON['/user_appointment_end']}')
-    #     date_lst.insert(0, f'\n{LEXICON['/user_appointment']}')
-    #     text = ''.join(date_lst)
-    #
-    # else:
-    #     text = LEXICON['/no_one_appointment']
-    # return text
-    pass
+from lexicon.lexicon import LEXICON
+from services.database_func import get_user_appointment
+
+# # получение актуальных записей из профиля пользователя
+# def get_user_appointment(user_id: str) -> str:
+#     # db = get_user_data_from_db(user_id)['date']
+#     # if db != {}:
+#     #     date_lst = []
+#     #
+#     #     for date, time in db.items():
+#     #         time = ', '.join(sorted(time))
+#     #         text = f'{date} - {time}\n'
+#     #         date_lst.append(text)
+#     #
+#     #     date_lst.sort()
+#     #     date_lst.append(f'\n{LEXICON['/user_appointment_end']}')
+#     #     date_lst.insert(0, f'\n{LEXICON['/user_appointment']}')
+#     #     text = ''.join(date_lst)
+#     #
+#     # else:
+#     #     text = LEXICON['/no_one_appointment']
+#     # return text
+#     pass
 
 # Создание списка с датами на месяц (month)
 def create_date_list(month) -> list:
@@ -41,6 +44,23 @@ def create_time_in_range_list(minute_range: int) -> list:
            for i in range(0, 24 * 60, minute_range)]
     return result
 
+# Форматирование текста для отображения юзеру его записей
+def get_user_appointment_format_text(user_id):
+    result = get_user_appointment(user_id)
+    if result:
+        text = LEXICON['/user_appointment']
+        for slot in result:
+            date, time = slot
+            date = date_from_db_format(date)
+            text += f'{date} - {time}\n'
+        return text
+    else:
+        return False
+
+# Форматирование даты для отображения ее пользователю
+def date_from_db_format(date):
+    year,month,day = date.split('-')
+    return f'{day}.{month}.{year}'
 
 # Уведомление ползователя об отмене его записи (администратором)
 async def send_message_to_user(admin_id, user_id, message_text):

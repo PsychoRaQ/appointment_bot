@@ -33,11 +33,11 @@ def start_calendary_admin_kb() -> InlineKeyboardMarkup:
 
 
 # Создание инлайн-клавиатуры календаря (в зависимости от выбора - изменение расписания или редактирование записей)
-def create_admin_calendary_date_kb(width: int, status, **kwargs) -> InlineKeyboardMarkup | bool:
+def create_admin_calendary_date_kb(width: int, status, *args) -> InlineKeyboardMarkup | bool:
     kb_builder = InlineKeyboardBuilder()
     buttons: list[InlineKeyboardButton] = []
 
-    if kwargs:
+    if args:
         for button, text in kwargs.items():
             date_is_locked = [v['lock'] for i, v in text.items()]
             date_is_locked = '✅' if False in date_is_locked else '❌'

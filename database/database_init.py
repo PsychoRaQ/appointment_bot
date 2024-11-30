@@ -35,7 +35,7 @@ async def process_checking_database() -> bool:
                         date DATE NOT NULL,
                         time TIME NOT NULL,
                         is_locked BOOLEAN NOT NULL DEFAULT FALSE,
-                        user_id INT DEFAULT NULL,
+                        user_id INT DEFAULT 0,
                         FOREIGN KEY (date) REFERENCES Dates (date),
                         FOREIGN KEY (time) REFERENCES Times (time)
                         FOREIGN KEY (user_id) REFERENCES Users (user_id)
@@ -49,4 +49,3 @@ async def process_checking_database() -> bool:
         print(e)
         connection.close()
         return False
-    

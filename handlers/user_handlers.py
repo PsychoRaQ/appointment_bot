@@ -41,7 +41,7 @@ async def proccess_calendary_command(message: Message):
         await message.answer(text=LEXICON['/user_is_max_appointment'],
                              reply_markup=ReplyKeyboardRemove())
     else:
-        keyboard = create_calendary_kb(5, **database_func.get_datetime_from_db())
+        keyboard = create_calendary_kb(5)
         if keyboard:
             await message.answer(text=LEXICON['/user_is_not_max_appointment'],
                                  reply_markup=keyboard)
@@ -55,7 +55,11 @@ async def proccess_calendary_command(message: Message):
 @router.message(Command(commands='my_appointment'))
 async def process__my_appointment(message: Message):
     await message.delete()
-    text = service_func.get_user_appointment(str(message.from_user.id))
+    text = service_func.get_user_appointment_format_text(message.from_user.id)
+    if not text:
+        text = LEXICON['/no_one_appointment']
+    else:
+        text += f'\n{LEXICON['/user_appointment_end']}'
     await message.answer(text=text,
                          reply_markup=None)
 
