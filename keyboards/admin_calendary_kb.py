@@ -1,7 +1,6 @@
 from aiogram.utils.keyboard import ReplyKeyboardBuilder, InlineKeyboardBuilder
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, KeyboardButton
-from services import database_func, service_func
-from services.database_func import get_datetime_from_db
+from services import database_func
 from lexicon.lexicon import LEXICON_ADMIN_COMMANDS, LEXICON_GENERAL_ADMIN_COMMANDS
 
 
@@ -65,7 +64,6 @@ def create_admin_times_kb(width: int, callback) -> InlineKeyboardMarkup:
     slots = database_func.get_one_slots_where('date', cb_date, '*')
     if slots:
         for slot in slots:
-            print(slot)
             id, date, time, is_locked, user_id = slot
             date_is_locked = '✅' if is_locked == 0 else '❌'
             if date_is_locked == '✅' and user_id:

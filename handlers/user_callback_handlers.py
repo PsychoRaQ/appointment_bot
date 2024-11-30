@@ -1,5 +1,5 @@
 from aiogram import F, Router
-from aiogram.types import CallbackQuery, ReplyKeyboardRemove
+from aiogram.types import CallbackQuery
 from keyboards.user_calendary_kb import create_times_kb, delete_my_appointment_time_kb
 from filters.filters import (DateTimeIsCorrect, UserIsRegister, UserIsDeleteAppointment,
                              UserIsDeleteAppointmentTime, DateIsCorrect)

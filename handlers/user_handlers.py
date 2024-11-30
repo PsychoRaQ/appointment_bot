@@ -1,10 +1,10 @@
-from aiogram import F, Router
+from aiogram import Router
 from aiogram.filters import Command, CommandStart
 from aiogram.types import Message, ReplyKeyboardRemove
 from keyboards.user_calendary_kb import create_calendary_kb, delete_my_appointment_data_kb
 from lexicon.lexicon import LEXICON
 from filters.filters import UserIsRegister
-from services import database_func, service_func
+from services import service_func
 
 router = Router()
 router.message.filter(UserIsRegister())
@@ -36,14 +36,18 @@ async def proccess_beginning_command(message: Message):
 @router.message(Command(commands='calendary'))
 async def proccess_calendary_command(message: Message):
     await message.delete()
-    keyboard = create_calendary_kb(5)
-    if keyboard:
-        await message.answer(text=LEXICON['/user_is_not_max_appointment'],
-                                 reply_markup=keyboard)
+    if service_func.return_user_is_max_appointment(message.chat.id):
+        await message.answer(text=LEXICON['/user_is_max_appointment'],
+                                 reply_markup=None)
     else:
-        await message.answer(text=LEXICON['/no_one_available_date'],
-                                 show_alert=True,
-                                 reply_markup=ReplyKeyboardRemove())
+        keyboard = create_calendary_kb(5)
+        if keyboard:
+            await message.answer(text=LEXICON['/user_is_not_max_appointment'],
+                                     reply_markup=keyboard)
+        else:
+            await message.answer(text=LEXICON['/no_one_available_date'],
+                                     show_alert=True,
+                                     reply_markup=ReplyKeyboardRemove())
 
 
 # Хэндлер для команды "Мои записи"

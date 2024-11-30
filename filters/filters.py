@@ -1,8 +1,6 @@
 from aiogram.filters import BaseFilter
 from aiogram.types import CallbackQuery
-from services.database_func import (user_is_sign, check_user_phone, get_datetime_from_db, user_is_admin)
 from services import database_func
-
 
 
 class DateTimeIsCorrect(BaseFilter):
@@ -39,7 +37,7 @@ class MessageContact(BaseFilter):
 
 class UserIsRegister(BaseFilter):
     async def __call__(self, message) -> bool:
-        return user_is_sign(message.from_user.id)
+        return database_func.user_is_sign(message.from_user.id)
 
 
 class UserIsDeleteAppointment(BaseFilter):

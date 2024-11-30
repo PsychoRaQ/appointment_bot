@@ -6,7 +6,6 @@ from filters.filters import UserIsAdmin
 from lexicon.lexicon import LEXICON_ADMIN, LEXICON_ADMIN_COMMANDS
 
 from keyboards.admin_calendary_kb import (start_calendary_admin_kb, create_admin_calendary_date_kb, admin_kb)
-from services import database_func
 
 router = Router()
 router.message.filter(UserIsAdmin())
