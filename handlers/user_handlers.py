@@ -36,17 +36,12 @@ async def proccess_beginning_command(message: Message):
 @router.message(Command(commands='calendary'))
 async def proccess_calendary_command(message: Message):
     await message.delete()
-
-    if database_func.user_max_appointment(str(message.chat.id)):
-        await message.answer(text=LEXICON['/user_is_max_appointment'],
-                             reply_markup=ReplyKeyboardRemove())
-    else:
-        keyboard = create_calendary_kb(5)
-        if keyboard:
-            await message.answer(text=LEXICON['/user_is_not_max_appointment'],
+    keyboard = create_calendary_kb(5)
+    if keyboard:
+        await message.answer(text=LEXICON['/user_is_not_max_appointment'],
                                  reply_markup=keyboard)
-        else:
-            await message.answer(text=LEXICON['/no_one_available_date'],
+    else:
+        await message.answer(text=LEXICON['/no_one_available_date'],
                                  show_alert=True,
                                  reply_markup=ReplyKeyboardRemove())
 

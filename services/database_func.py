@@ -288,7 +288,7 @@ def get_two_slots_where(key1, value1, key2, value2, what) -> list | None:
     connection = sqlite3.connect(DATABASE_PATH)
     try:
         cursor = connection.cursor()
-        cursor.execute(f'SELECT {what} FROM Slots WHERE {key1} = ? AND {key2} = ?', (value1, value2))
+        cursor.execute(f'SELECT {what} FROM Slots WHERE {key1} = ? AND {key2} = ? ORDER BY date, time', (value1, value2))
         result = cursor.fetchall()
         connection.close()
         return result
@@ -303,7 +303,7 @@ def get_one_slots_where(key1, value1, what) -> list | None:
     connection = sqlite3.connect(DATABASE_PATH)
     try:
         cursor = connection.cursor()
-        cursor.execute(f'SELECT {what} FROM Slots WHERE {key1} = ? ORDER BY time', (value1,))
+        cursor.execute(f'SELECT {what} FROM Slots WHERE {key1} = ? ORDER BY date, time', (value1,))
         result = cursor.fetchall()
         connection.close()
         return result

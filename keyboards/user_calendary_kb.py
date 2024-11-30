@@ -11,9 +11,14 @@ def create_calendary_kb(width: int) -> InlineKeyboardMarkup | bool:
     kb_builder = InlineKeyboardBuilder()
     buttons: list[InlineKeyboardButton] = []
     not_locked_dates = database_func.get_two_slots_where('is_locked',False, 'user_id', False, '*')
-
+    print(not_locked_dates)
+    dates_list = []
     for slot in not_locked_dates:
         callback_date = slot[1]
+        if callback_date in dates_list:
+            continue
+        else:
+            dates_list.append(callback_date)
         date = slot[1].split('-')
         text_date = f'{date[2]}.{date[1]}'
         buttons.append(InlineKeyboardButton(text=text_date, callback_data=callback_date))
