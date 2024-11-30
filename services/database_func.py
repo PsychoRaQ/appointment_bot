@@ -303,7 +303,7 @@ def get_one_slots_where(key1, value1, what) -> list | None:
     connection = sqlite3.connect(DATABASE_PATH)
     try:
         cursor = connection.cursor()
-        cursor.execute(f'SELECT {what} FROM Slots WHERE {key1} = ?', (value1,))
+        cursor.execute(f'SELECT {what} FROM Slots WHERE {key1} = ? ORDER BY time', (value1,))
         result = cursor.fetchall()
         connection.close()
         return result
@@ -375,3 +375,36 @@ def get_user_appointment(user_id) -> list | None:
         print(e)
         connection.close()
         return None
+
+
+# Возвращаем все Даты или Время из таблиц Dates, Times (по выбору аргумента)
+# Для отображения админ-календаря изменения слотов
+def return_dates_or_times_to_admin_calendary(table_name) -> list | None:
+    connection = sqlite3.connect(DATABASE_PATH)
+    try:
+        cursor = connection.cursor()
+        cursor.execute(f'SELECT * FROM {table_name}')
+        result = cursor.fetchall()
+        connection.close()
+        return result
+    except Exception as e:
+        print(e)
+        connection.close()
+        return None
+
+
+# Блокируем слот и очищаем его от пользователя
+# или разблокируем его
+def admin_change_is_locked_status(date, time, status) -> bool:
+    print(status)
+    connection = sqlite3.connect(DATABASE_PATH)
+    try:
+        cursor = connection.cursor()
+        cursor.execute(f'UPDATE Slots SET user_id = 0, is_locked = ?  WHERE date = ? AND time = ?',
+                       (status, date, time))
+        connection.commit()
+        connection.close()
+        return True
+    except Exception as e:
+        print(e)
+        return False

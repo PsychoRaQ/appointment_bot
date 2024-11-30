@@ -36,6 +36,6 @@ async def proccess_calendary_admin_command(message: Message):
 async def proccess_edit_calendary_command(message: Message):
     await message.delete()
     status = 'admin_edit_appointment'
-    keyboard = create_admin_calendary_date_kb(5, status=status, **database_func.get_datetime_from_db())
+    keyboard = create_admin_calendary_date_kb(4, status=status)
     await message.answer(LEXICON_ADMIN['/edit_calendary'],
                          reply_markup=keyboard)

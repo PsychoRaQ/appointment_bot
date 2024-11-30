@@ -4,13 +4,14 @@ from services.database_func import (user_is_sign, check_user_phone, get_datetime
 from services import database_func
 
 
+
 class DateTimeIsCorrect(BaseFilter):
     async def __call__(self, callback: CallbackQuery) -> bool:
         if ',' in callback.data:
             date, time = callback.data.split(',')
-            db = database_func.get_two_slots_where('is_locked', False, 'user_id', False, 'date, time')
+            slots = database_func.get_two_slots_where('is_locked', False, 'user_id', False, 'date, time')
 
-            for slot in db:
+            for slot in slots:
                 if date in slot and time in slot:
                     return True
         else:
@@ -21,8 +22,8 @@ class DateIsCorrect(BaseFilter):
     async def __call__(self, callback: CallbackQuery):
         try:
             date = callback.data
-            db = database_func.get_two_slots_where('is_locked', False, 'user_id', False, 'date')
-            for slot in db:
+            slots = database_func.get_two_slots_where('is_locked', False, 'user_id', False, 'date')
+            for slot in slots:
                 if date in slot:
                     return True
         except Exception as e:
@@ -61,12 +62,21 @@ class UserIsDeleteAppointmentTime(BaseFilter):
 
 class UserIsGeneralAdmin(BaseFilter):
     async def __call__(self, message) -> bool:
-        return user_is_sign(str(message.from_user.id)) and user_is_admin(str(message.from_user.id)) == 2
+        users = database_func.get_userdata(message.from_user.id)
+        if users:
+            for user in users:
+                print(user)
+                return user[5] == 2
+        return False
 
 
 class UserIsAdmin(BaseFilter):
     async def __call__(self, message) -> bool:
-        return user_is_sign(str(message.from_user.id)) and user_is_admin(str(message.from_user.id))
+        users = database_func.get_userdata(message.from_user.id)
+        if users:
+            for user in users:
+                return user[5] == 1
+        return False
 
 
 class AdminChooseDate(BaseFilter):
