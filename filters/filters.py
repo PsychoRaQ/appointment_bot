@@ -3,32 +3,6 @@ from aiogram.types import CallbackQuery
 from services import database_func
 
 
-class DateTimeIsCorrect(BaseFilter):
-    async def __call__(self, callback: CallbackQuery) -> bool:
-        if ',' in callback.data:
-            date, time = callback.data.split(',')
-            slots = database_func.get_two_slots_where('is_locked', False, 'user_id', False, 'date, time')
-
-            for slot in slots:
-                if date in slot and time in slot:
-                    return True
-        else:
-            return False
-
-
-class DateIsCorrect(BaseFilter):
-    async def __call__(self, callback: CallbackQuery):
-        try:
-            date = callback.data
-            slots = database_func.get_two_slots_where('is_locked', False, 'user_id', False, 'date')
-            for slot in slots:
-                if date in slot:
-                    return True
-        except Exception as e:
-            print(e)
-            return False
-
-
 # Проверяем наличие "контакта" в сообщении
 class MessageContact(BaseFilter):
     async def __call__(self, message) -> bool:
@@ -38,24 +12,6 @@ class MessageContact(BaseFilter):
 class UserIsRegister(BaseFilter):
     async def __call__(self, message) -> bool:
         return database_func.user_is_sign(message.from_user.id)
-
-
-class UserIsDeleteAppointment(BaseFilter):
-    async def __call__(self, callback: CallbackQuery):
-        try:
-            cb_username, cb_date = callback.data.split('_delete_')
-            return callback.data == f'{callback.message.chat.id}_delete_{cb_date}'
-        except:
-            return False
-
-
-class UserIsDeleteAppointmentTime(BaseFilter):
-    async def __call__(self, callback: CallbackQuery):
-        try:
-            cb_username, cb_date, cb_time = callback.data.split('_delete_')
-            return callback.data == f'{callback.message.chat.id}_delete_{cb_date}_delete_{cb_time}'
-        except:
-            return False
 
 
 class UserIsGeneralAdmin(BaseFilter):

@@ -9,6 +9,7 @@ from lexicon.lexicon import LEXICON_ADMIN
 from keyboards.admin_calendary_kb import create_admin_times_kb
 from services import database_func, service_func
 
+
 router = Router()
 router.message.filter(UserIsAdmin())
 
