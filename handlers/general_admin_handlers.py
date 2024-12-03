@@ -10,8 +10,13 @@ from keyboards.admin_calendary_kb import general_admin_kb
 router = Router()
 router.message.filter(UserIsGeneralAdmin())
 
+'''
+Обработка message'ей 
+для супер-администратора
+'''
 
-# Хэндлер для команды "Старт" (если пользователь админ)
+
+# Хэндлер для команды "Старт"
 @router.message(CommandStart())
 async def proccess_start_user_command_is_register(message: Message):
     await message.delete()

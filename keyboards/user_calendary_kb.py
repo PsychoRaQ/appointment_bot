@@ -2,6 +2,12 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from services import database_func, service_func, callback_data_factory
 
+'''
+Функции связанные с генерацией
+inline-клавиатур для пользователей
+'''
+
+
 # Создание инлайн-клавиатуры календаря (даты)
 def create_calendary_kb(width: int) -> InlineKeyboardMarkup | bool:
     kb_builder = InlineKeyboardBuilder()
@@ -16,21 +22,21 @@ def create_calendary_kb(width: int) -> InlineKeyboardMarkup | bool:
             dates_list.append(callback_date)
         date = slot[1].split('-')
         text_date = f'{date[2]}.{date[1]}'
-        buttons.append(InlineKeyboardButton(text=text_date, callback_data=callback_data_factory.CallbackFactoryForUserCalendary(
-            user_id=0,
-            date=callback_date,
-            time='',
-            status='UserChooseDate'
-        ).pack()))
+        buttons.append(
+            InlineKeyboardButton(text=text_date, callback_data=callback_data_factory.CallbackFactoryForUserCalendary(
+                user_id=0,
+                date=callback_date,
+                time='',
+                status='UserChooseDate'
+            ).pack()))
     if len(buttons) == 0:
         return False
     kb_builder.row(*buttons, width=width)
-    kb_builder.row(InlineKeyboardButton(text='Закрыть', callback_data=callback_data_factory.CallbackFactoryForUserCalendary(
-            user_id=0,
-            date='',
-            time='',
-            status='CloseDateKeyboard'
-        ).pack()))
+    kb_builder.row(InlineKeyboardButton(text='Назад в главное меню',
+                                        callback_data=callback_data_factory.CallbackFactoryForUserMenu(
+                                            user_id=0,
+                                            status='BackMenu'
+                                        ).pack()))
     return kb_builder.as_markup()
 
 
@@ -43,20 +49,19 @@ def create_times_kb(width: int, callback_data) -> InlineKeyboardMarkup | bool:
         for slot in not_locked_times:
             callback_date = slot[0]
             callback_time = slot[1]
-            buttons.append(InlineKeyboardButton(text=callback_time, callback_data=callback_data_factory.CallbackFactoryForUserCalendary(
-                user_id=0,
-                date=callback_date,
-                time=callback_time,
-                status='UserChooseTime'
-            ).pack()))
+            buttons.append(InlineKeyboardButton(text=callback_time,
+                                                callback_data=callback_data_factory.CallbackFactoryForUserCalendary(
+                                                    user_id=0,
+                                                    date=callback_date,
+                                                    time=callback_time,
+                                                    status='UserChooseTime'
+                                                ).pack()))
 
     buttons = sorted(buttons, key=lambda x: x.text)
     kb_builder.row(*buttons, width=width)
-    kb_builder.row(InlineKeyboardButton(text="Назад", callback_data=callback_data_factory.CallbackFactoryForUserCalendary(
-        user_id = 0,
-        date='',
-        time='',
-        status='BackToDateKeyboard'
+    kb_builder.row(InlineKeyboardButton(text="Назад", callback_data=callback_data_factory.CallbackFactoryForUserMenu(
+        user_id=0,
+        status='Calendary'
     ).pack()), width=1)
     return kb_builder.as_markup()
 
@@ -74,21 +79,21 @@ def delete_my_appointment_data_kb(width, user_id):
                 continue
             dates_list.append(date)
             text_date = service_func.date_from_db_format(date)
-            buttons.append(InlineKeyboardButton(text=text_date, callback_data=callback_data_factory.CallbackFactoryForUserCalendary(
-                user_id=user_id,
-                date=date,
-                time='',
-                status='UserDelDate'
-            ).pack()))
+            buttons.append(InlineKeyboardButton(text=text_date,
+                                                callback_data=callback_data_factory.CallbackFactoryForUserCalendary(
+                                                    user_id=user_id,
+                                                    date=date,
+                                                    time='',
+                                                    status='UserDelDate'
+                                                ).pack()))
     if not buttons:
         return 'no_one_appointment'
     kb_builder.row(*buttons, width=width)
-    kb_builder.row(InlineKeyboardButton(text='Закрыть', callback_data=callback_data_factory.CallbackFactoryForUserCalendary(
-                user_id=user_id,
-                date='',
-                time='',
-                status='CloseDeleteKeyboard'
-            ).pack()), width=1)
+    kb_builder.row(InlineKeyboardButton(text='Назад в главное меню',
+                                        callback_data=callback_data_factory.CallbackFactoryForUserMenu(
+                                            user_id=0,
+                                            status='BackMenu'
+                                        ).pack()))
     return kb_builder.as_markup()
 
 
@@ -101,27 +106,27 @@ def delete_my_appointment_time_kb(width, callback_data):
     slots = database_func.get_two_slots_where('date', date, 'user_id', user_id, 'date, time')
     if slots:
         for slot in slots:
-                date, time = slot
-                buttons.append(InlineKeyboardButton(text=time, callback_data=callback_data_factory.CallbackFactoryForUserCalendary(
-                user_id=user_id,
-                date=date,
-                time=time,
-                status='UserDelTime'
-            ).pack()))
+            date, time = slot
+            buttons.append(
+                InlineKeyboardButton(text=time, callback_data=callback_data_factory.CallbackFactoryForUserCalendary(
+                    user_id=user_id,
+                    date=date,
+                    time=time,
+                    status='UserDelTime'
+                ).pack()))
         if not buttons:
-            buttons.append(InlineKeyboardButton(text='Назад', callback_data=callback_data_factory.CallbackFactoryForUserCalendary(
-                user_id=0,
-                date='',
-                time='',
-                status='NoOneAppointment'
-            ).pack()))
+            buttons.append(
+                InlineKeyboardButton(text='Назад', callback_data=callback_data_factory.CallbackFactoryForUserCalendary(
+                    user_id=0,
+                    date='',
+                    time='',
+                    status='NoOneAppointment'
+                ).pack()))
 
     kb_builder.row(*buttons, width=width)
-    kb_builder.row(InlineKeyboardButton(text="Назад", callback_data=callback_data_factory.CallbackFactoryForUserCalendary(
-                user_id=0,
-                date='',
-                time='',
-                status='BackToDeleteCalendary'
-            ).pack()), width=1)
+    kb_builder.row(InlineKeyboardButton(text="Назад", callback_data=callback_data_factory.CallbackFactoryForUserMenu(
+        user_id=0,
+        status='DelMyAppoint'
+    ).pack()), width=1)
 
     return kb_builder.as_markup()

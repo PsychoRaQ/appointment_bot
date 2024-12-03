@@ -6,8 +6,13 @@ from lexicon.lexicon import LEXICON
 from services import database_func
 from filters.filters import MessageContact
 
-
 router = Router()
+
+'''
+Обработка всех message'ей
+для незарегистрированных пользователей
+'''
+
 
 # Хэндлер для команды Старт (незарегистрированный пользователь)
 @router.message(CommandStart())

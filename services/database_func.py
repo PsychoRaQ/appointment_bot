@@ -4,6 +4,15 @@ import config_data.config
 
 DATABASE_PATH = Path(config_data.config.DATABASE_PATH)
 
+import logging
+
+logger = logging.getLogger(__name__)
+
+'''
+Функции обеспечивающие связь с базой данных и
+выполнение SQL запросов
+'''
+
 
 # Добавляем пользователя в БД (если его там нет)
 def new_user_to_db(user_id, username, phone) -> bool:
@@ -15,7 +24,7 @@ def new_user_to_db(user_id, username, phone) -> bool:
         connection.close()
         return True
     except Exception as e:
-        print(e)
+        logger.warning(e)
         connection.close()
         return False
 
@@ -30,7 +39,7 @@ def user_is_sign(user_id) -> bool:
         connection.close()
         return user_id in result
     except Exception as e:
-        print(e)
+        logger.warning(e)
         connection.close()
         return False
 
@@ -45,7 +54,7 @@ def get_userdata(user_id) -> list | None:
         connection.close()
         return result
     except Exception as e:
-        print(e)
+        logger.warning(e)
         connection.close()
         return None
 
@@ -60,7 +69,7 @@ def add_new_month_to_db(month: int) -> bool:
         connection.close()
         return True
     except Exception as e:
-        print(e)
+        logger.warning(e)
         connection.close()
         return False
 
@@ -76,7 +85,7 @@ def add_new_time_to_db(minute_range: int) -> bool:
         connection.close()
         return True
     except Exception as e:
-        print(e)
+        logger.warning(e)
         connection.close()
         return False
 
@@ -92,7 +101,7 @@ def get_two_slots_where(key1, value1, key2, value2, what) -> list | None:
         connection.close()
         return result
     except Exception as e:
-        print(e)
+        logger.warning(e)
         connection.close()
         return None
 
@@ -107,7 +116,7 @@ def get_one_slots_where(key1, value1, what) -> list | None:
         connection.close()
         return result
     except Exception as e:
-        print(e)
+        logger.warning(e)
         connection.close()
         return None
 
@@ -123,7 +132,7 @@ def get_open_times_with_date(date) -> list | None:
         connection.close()
         return result
     except Exception as e:
-        print(e)
+        logger.warning(e)
         connection.close()
         return None
 
@@ -142,7 +151,7 @@ def add_new_slot(date, time) -> bool:
         connection.close()
         return True
     except Exception as e:
-        print(e)
+        logger.warning(e)
         connection.close()
         return False
 
@@ -157,7 +166,7 @@ def user_take_datetime(date, time, user_id) -> bool:
         connection.close()
         return True
     except Exception as e:
-        print(e)
+        logger.warning(e)
         return False
 
 
@@ -171,7 +180,7 @@ def get_user_appointment(user_id) -> list | None:
         connection.close()
         return result
     except Exception as e:
-        print(e)
+        logger.warning(e)
         connection.close()
         return None
 
@@ -187,7 +196,7 @@ def return_dates_or_times_to_admin_calendary(table_name) -> list | None:
         connection.close()
         return result
     except Exception as e:
-        print(e)
+        logger.warning(e)
         connection.close()
         return None
 
@@ -195,7 +204,6 @@ def return_dates_or_times_to_admin_calendary(table_name) -> list | None:
 # Блокируем слот и очищаем его от пользователя
 # или разблокируем его
 def admin_change_is_locked_status(date, time, status) -> bool:
-    print(status)
     connection = sqlite3.connect(DATABASE_PATH)
     try:
         cursor = connection.cursor()
@@ -205,5 +213,5 @@ def admin_change_is_locked_status(date, time, status) -> bool:
         connection.close()
         return True
     except Exception as e:
-        print(e)
+        logger.warning(e)
         return False

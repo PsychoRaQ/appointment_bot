@@ -7,9 +7,18 @@ from handlers import (user_handlers, unregister_handlers,
 from keyboards.main_menu import set_main_menu
 from config_data import bot_init
 from database.database_init import process_checking_database
+import logging
 
 
 async def main() -> None:
+
+    # настраиваем логгирование
+    logging.basicConfig(
+        level=logging.WARNING,
+        format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
+    )
+
+    # инициализация бота и диспетчера
     bot = bot_init.bot
     dp = Dispatcher()
 
@@ -33,8 +42,6 @@ if __name__ == '__main__':
     asyncio.run(main())
 
 # ######################
-
-# Переделать админку на фабрики колбэков
 
 # СДЕЛАТЬ ВОЗМОЖНОСТЬ ИЗМЕНЕНИЯ МАКСИМАЛЬНОГО КОЛИЧЕСТВА ЗАПИСЕЙ У ПОЛЬЗОВАТЕЛЯ
 # СДЕЛАТЬ АДМИНУ ВЫВОД ВСЕХ ПОЛЬЗОВАТЕЛЕЙ И ВЕСЬ ФУНКЦИОНАЛ С ЭТИМ СВЯЗАННЫЙ

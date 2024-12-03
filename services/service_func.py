@@ -4,6 +4,14 @@ import datetime
 from lexicon.lexicon import LEXICON
 from services import database_func
 
+import logging
+
+logger = logging.getLogger(__name__)
+
+'''
+Разные сервисные функции
+'''
+
 
 # Создание списка с датами на месяц (month)
 def create_date_list(month) -> list:
@@ -25,7 +33,7 @@ def create_time_in_range_list(minute_range: int) -> list:
 
 
 # Форматирование текста для отображения юзеру его записей
-def get_user_appointment_format_text(user_id):
+def get_user_appointment_format_text(user_id) -> str | bool:
     result = database_func.get_user_appointment(user_id)
     if result:
         text = LEXICON['/user_appointment']
@@ -57,7 +65,7 @@ async def send_message_to_user(admin_id, user_id, message_text):
     try:
         await bot.send_message(user_id, message_text)
     except Exception as e:
-        print(f"Ошибка при отправке сообщения пользователю {user_id}: {e}")
+        logger.warning(e)
         await send_alert_to_admin(admin_id, f"Ошибка при отправке сообщения пользователю {user_id}: {e}")
 
 
@@ -67,4 +75,4 @@ async def send_alert_to_admin(user_id, message_text):
     try:
         await bot.send_message(user_id, message_text)
     except Exception as e:
-        print(f"Ошибка при отправке сообщения администратору: {e}")
+        logger.warning(e)
