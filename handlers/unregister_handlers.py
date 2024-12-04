@@ -1,9 +1,8 @@
 from aiogram import Router, F
 from aiogram.filters import CommandStart, StateFilter, Command
 from aiogram.types import Message, ReplyKeyboardRemove, CallbackQuery
-from pyexpat.errors import messages
 
-from keyboards.other_kb import phone_kb, create_confirm_registration_keyboard, create_main_menu_kb
+from keyboards.other_kb import create_confirm_registration_keyboard, create_main_menu_kb
 from lexicon.lexicon import LEXICON
 from services import database_func, service_func, callback_data_factory
 from filters.filters import PhoneNumberIsCorrect, UsernameIsCorrect, UserIsRegister
@@ -44,7 +43,7 @@ async def proccess_add_phone_unregister_user(message: Message, state: FSMContext
     name = service_func.username_is_correct(message.text)
     await state.update_data(name=name)
     await message.delete()
-    text = f'Приятно познакомиться {name}!\n' + LEXICON['/phone']
+    text = f'Приятно познакомиться, {name}!\n' + LEXICON['/phone']
     await message.answer(text=text)
     await state.set_state(FSMRegistrationGroup.fill_phone)
 
@@ -87,6 +86,7 @@ async def proccess_confirm_registration(callback: CallbackQuery, state: FSMConte
     database_func.new_user_to_db(callback.message.chat.id, name, phone)
     await state.clear()
     await callback.message.edit_text(text=LEXICON['/registration_is_done'], reply_markup=create_main_menu_kb())
+
 
 # Хэндлер при отмене регистрации:
 @router.callback_query(StateFilter(FSMRegistrationGroup.fill_user_accept),

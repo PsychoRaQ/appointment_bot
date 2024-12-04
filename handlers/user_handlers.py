@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 async def proccess_start_command_user_is_register(message: Message):
     await message.delete()
     keyboard = create_main_menu_kb()
-    await message.answer(text='Что делаем?',
+    await message.answer(text='Меню',
                          reply_markup=keyboard)
 
 
