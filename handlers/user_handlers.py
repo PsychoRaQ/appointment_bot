@@ -1,5 +1,6 @@
 from aiogram import Router
-from aiogram.filters import CommandStart
+from aiogram.filters import CommandStart, StateFilter
+from aiogram.fsm.state import default_state
 from aiogram.types import Message
 from keyboards.other_kb import create_main_menu_kb
 from lexicon.lexicon import LEXICON
@@ -7,7 +8,7 @@ from filters.filters import UserIsRegister
 import logging
 
 router = Router()
-router.message.filter(UserIsRegister())
+router.message.filter(UserIsRegister(), StateFilter(default_state))
 logger = logging.getLogger(__name__)
 
 '''

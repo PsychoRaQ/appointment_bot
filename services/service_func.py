@@ -1,4 +1,3 @@
-from config_data.bot_init import bot
 import datetime
 
 from lexicon.lexicon import LEXICON
@@ -61,7 +60,7 @@ def date_from_db_format(date):
 
 
 # Уведомление ползователя об отмене его записи (администратором)
-async def send_message_to_user(admin_id, user_id, message_text):
+async def send_message_to_user(admin_id, user_id, message_text, bot):
     try:
         await bot.send_message(user_id, message_text)
     except Exception as e:
@@ -71,8 +70,25 @@ async def send_message_to_user(admin_id, user_id, message_text):
 
 # Если ошибка при отправке сообщения пользователю - уведомляем админа об этом
 # Если ошибка при отправке админу - просто выводим инфу в консоль
-async def send_alert_to_admin(user_id, message_text):
+async def send_alert_to_admin(user_id, message_text, bot):
     try:
         await bot.send_message(user_id, message_text)
     except Exception as e:
         logger.warning(e)
+
+
+# проверяем имя пользователя при регистрации на корректность
+# + форматируем его (отсекая фамилию и отчество)
+def username_is_correct(name):
+    if ' ' in name:
+        name = name.split(' ')[0]
+    return name
+
+# форматируем номер телефона для внесения в базу
+def refactor_phone_number(number):
+    if number[0] == '8':
+        return number
+    elif number[0] == '+':
+        return number.replace('+7', '8', 1)
+    else:
+        return number.replace('7', '8', 1)

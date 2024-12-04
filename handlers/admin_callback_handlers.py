@@ -1,4 +1,4 @@
-from aiogram import Router, F
+from aiogram import Router, F, Bot
 
 from aiogram.types import CallbackQuery
 
@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 Обработка callback'ов
 связанных с администраторами
 '''
+
 
 # Хэндлер для обработки колбэков "Изменить расписание"
 @router.callback_query(callback_data_factory.CallbackFactoryForAdminCalendary.filter(F.status == 'EditAppoint'))
@@ -50,7 +51,7 @@ async def process_date_is_confirm(callback: CallbackQuery,
 # Хэндлер для коллбэков после выбора ВРЕМЕНИ на инлайн-клавиатуре
 @router.callback_query(callback_data_factory.CallbackFactoryForAdminCalendary.filter(F.status == 'AdmDateTime'))
 async def process_datetime_is_choose(callback: CallbackQuery,
-                                     callback_data: callback_data_factory.CallbackFactoryForAdminCalendary):
+                                     callback_data: callback_data_factory.CallbackFactoryForAdminCalendary, bot: Bot):
     date = callback_data.date
     time = callback_data.time
     slot = database_func.get_two_slots_where('date', date, 'time', time, 'user_id, is_locked')
@@ -61,7 +62,7 @@ async def process_datetime_is_choose(callback: CallbackQuery,
         database_func.admin_change_is_locked_status(date, time, current_status)
         if user:
             await service_func.send_message_to_user(str(callback.message.chat.id), user,
-                                                    f'{LEXICON_ADMIN['/admin_delete_appointment']}{date}, {time}')
+                                                    f'{LEXICON_ADMIN['/admin_delete_appointment']}{date}, {time}', bot)
     else:
         database_func.add_new_slot(date, time)
 

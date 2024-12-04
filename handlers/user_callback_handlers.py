@@ -1,5 +1,7 @@
 from aiogram import F, Router
-from aiogram.types import CallbackQuery, ReplyKeyboardRemove
+from aiogram.filters import StateFilter
+from aiogram.fsm.state import default_state
+from aiogram.types import CallbackQuery
 from keyboards.user_calendary_kb import create_times_kb, delete_my_appointment_time_kb, create_calendary_kb, \
     delete_my_appointment_data_kb
 from keyboards.other_kb import create_back_button_kb, create_main_menu_kb
@@ -10,7 +12,7 @@ from services import database_func, service_func, callback_data_factory
 import logging
 
 router = Router()
-router.message.filter(UserIsRegister())
+router.message.filter(UserIsRegister(), StateFilter(default_state))
 logger = logging.getLogger(__name__)
 
 '''

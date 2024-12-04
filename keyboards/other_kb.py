@@ -64,3 +64,21 @@ def create_back_button_kb() -> InlineKeyboardMarkup | bool:
                              ).pack()))
 
     return kb_builder.as_markup()
+
+# Создание инлайн-клавиатуры для подтверждения регистрации пользователя
+def create_confirm_registration_keyboard() -> InlineKeyboardMarkup | bool:
+    kb_builder = InlineKeyboardBuilder()
+    kb_builder.row(
+        InlineKeyboardButton(text='Подтвердить данные',
+                             callback_data=callback_data_factory.CallbackFactoryForUserMenu(
+                                 user_id=0,
+                                 status='RegConfirm'
+                             ).pack()),
+        InlineKeyboardButton(text='Начать регистрацию сначала',
+                             callback_data=callback_data_factory.CallbackFactoryForUserMenu(
+                                 user_id=0,
+                                 status='NoReg'
+                             ).pack()), width=1)
+
+    return kb_builder.as_markup()
+

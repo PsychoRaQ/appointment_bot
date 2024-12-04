@@ -37,7 +37,9 @@ def user_is_sign(user_id) -> bool:
         cursor.execute(f'SELECT user_id FROM Users WHERE user_id = ?', (user_id,))
         result = cursor.fetchone()
         connection.close()
-        return user_id in result
+        if result:
+            return user_id in result
+        return False
     except Exception as e:
         logger.warning(e)
         connection.close()

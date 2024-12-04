@@ -1,4 +1,4 @@
-from aiogram import Router
+from aiogram import Router, F
 from aiogram.filters import CommandStart, Command
 from aiogram.types import Message
 
@@ -27,7 +27,7 @@ async def proccess_start_admin_command_is_register(message: Message):
 
 
 # Хэндлер для команды "Отобразить календарь"
-@router.message(Command('calendary'))
+@router.message(F.text == 'Настроить доступные даты и время')
 async def proccess_calendary_admin_command(message: Message):
     await message.delete()
     keyboard = start_calendary_admin_kb()

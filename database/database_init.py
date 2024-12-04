@@ -3,6 +3,13 @@ from config_data.config import DATABASE_PATH
 from pathlib import Path
 
 DATABASE_PATH = Path(DATABASE_PATH)
+
+'''
+Инициализация базы данных
+(проверка её наличия и создание таблиц, в случае отсутствия)
+'''
+
+
 # Проверка на наличие таблицы в БД, если ее нет - создает пустую (принимает соединение с БД)
 async def process_checking_database() -> bool:
     connection = sqlite3.connect(DATABASE_PATH)

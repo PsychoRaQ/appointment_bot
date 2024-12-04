@@ -10,5 +10,5 @@ from lexicon.lexicon import LEXICON_COMMANDS
 
 # Функция создания главного меню для пользователя (в зависимости от регистрации его в боте)
 async def set_main_menu(bot: Bot):
-    main_menu_commands = [BotCommand(command='/start', description=LEXICON_COMMANDS['start'])]
+    main_menu_commands = [BotCommand(command='/start', description=LEXICON_COMMANDS['/start'])]
     await bot.set_my_commands(main_menu_commands)
