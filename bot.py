@@ -1,5 +1,6 @@
 import asyncio
 from aiogram import Dispatcher, Bot
+from aiogram_dialog import setup_dialogs
 
 from handlers import (user_handlers, unregister_handlers,
                       general_admin_handlers, admin_handlers,
@@ -7,9 +8,9 @@ from handlers import (user_handlers, unregister_handlers,
 from keyboards.main_menu import set_main_menu
 from database.database_init import process_checking_database
 import logging
-from aiogram.fsm.storage.redis import RedisStorage, Redis
+from aiogram.fsm.storage.redis import DefaultKeyBuilder, Redis, RedisStorage
 from config_data import config
-
+from dialogs import registration_dialogs
 
 async def main() -> None:
     # настраиваем логгирование
@@ -19,16 +20,18 @@ async def main() -> None:
     )
 
     # подключаем редис
-    storage = RedisStorage(redis=Redis(host='localhost'))
+    storage = RedisStorage(redis=Redis(host='localhost'), key_builder=DefaultKeyBuilder(with_destiny=True))
 
     # инициализация бота и диспетчера
     bot = Bot(token=config.BOT_TOKEN)
     dp = Dispatcher(storage=storage)
 
     # Подключаем роутеры
-    dp.include_routers(unregister_handlers.router, general_admin_handlers.router, admin_handlers.router,
+    dp.include_routers(registration_dialogs.router,registration_dialogs.start_dialog, general_admin_handlers.router, admin_handlers.router,
                        user_handlers.router,
                        admin_callback_handlers.router, user_callback_handlers.router)
+
+    setup_dialogs(dp)
 
     # инициализация базы данных
     await process_checking_database()
