@@ -12,6 +12,7 @@ from aiogram.fsm.storage.redis import DefaultKeyBuilder, Redis, RedisStorage
 from config_data import config
 from dialogs import registration_dialogs
 
+
 async def main() -> None:
     # настраиваем логгирование
     logging.basicConfig(
@@ -27,9 +28,10 @@ async def main() -> None:
     dp = Dispatcher(storage=storage)
 
     # Подключаем роутеры
-    dp.include_routers(registration_dialogs.router,registration_dialogs.start_dialog, general_admin_handlers.router, admin_handlers.router,
+    dp.include_routers(registration_dialogs.router, general_admin_handlers.router, admin_handlers.router,
                        user_handlers.router,
-                       admin_callback_handlers.router, user_callback_handlers.router)
+                       registration_dialogs.start_dialog,
+                       admin_callback_handlers.router, user_callback_handlers.router, )
 
     setup_dialogs(dp)
 
