@@ -10,7 +10,7 @@ from database.database_init import process_checking_database
 import logging
 from aiogram.fsm.storage.redis import DefaultKeyBuilder, Redis, RedisStorage
 from config_data import config
-from dialogs import registration_dialogs
+from dialogs import dialogs
 
 
 async def main() -> None:
@@ -27,12 +27,19 @@ async def main() -> None:
     bot = Bot(token=config.BOT_TOKEN)
     dp = Dispatcher(storage=storage)
 
-    # Подключаем роутеры
-    dp.include_routers(registration_dialogs.router, general_admin_handlers.router, admin_handlers.router,
-                       user_handlers.router,
-                       registration_dialogs.start_dialog,
-                       admin_callback_handlers.router, user_callback_handlers.router, )
+    # Подключаем роутеры для хэндлеров
+    dp.include_routers(user_handlers.router,
+                       unregister_handlers.router,
+                       )
 
+    # Подключаем роутеры для диалогов
+    dp.include_routers(dialogs.main_menu_dialog,
+                       dialogs.start_dialog,
+                       dialogs.user_appointment_dialog,
+                       dialogs.user_new_appointment_dialog,
+                       )
+
+    # Подключаем диалоги
     setup_dialogs(dp)
 
     # инициализация базы данных
@@ -50,6 +57,18 @@ if __name__ == '__main__':
     asyncio.run(main())
 
 # ######################
+### Новое
+# Перенести функционал бота на диалоги
+
+
+# Запись +
+# Мои записи +-
+# Отмена записи (в моих записях) -
+# Главное меню +
+# Админка -
+
+
+#### Старое
 
 # СДЕЛАТЬ ВОЗМОЖНОСТЬ ИЗМЕНЕНИЯ МАКСИМАЛЬНОГО КОЛИЧЕСТВА ЗАПИСЕЙ У ПОЛЬЗОВАТЕЛЯ
 # СДЕЛАТЬ АДМИНУ ВЫВОД ВСЕХ ПОЛЬЗОВАТЕЛЕЙ И ВЕСЬ ФУНКЦИОНАЛ С ЭТИМ СВЯЗАННЫЙ

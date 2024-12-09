@@ -27,27 +27,18 @@ async def process_checking_database() -> bool:
         )
         ''')
         cursor.execute(f'''
-                CREATE TABLE IF NOT EXISTS Dates (
-                date DATE PRIMARY KEY UNIQUE
-                )
-                ''')
-        cursor.execute(f'''
-                       CREATE TABLE IF NOT EXISTS Times (
-                       time TIME PRIMARY KEY UNIQUE
-                       )
-                       ''')
-        cursor.execute(f'''
                         CREATE TABLE IF NOT EXISTS Slots (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                         date DATE NOT NULL,
                         time TIME NOT NULL,
                         is_locked BOOLEAN NOT NULL DEFAULT FALSE,
                         user_id INT DEFAULT 0,
-                        FOREIGN KEY (date) REFERENCES Dates (date),
-                        FOREIGN KEY (time) REFERENCES Times (time)
                         FOREIGN KEY (user_id) REFERENCES Users (user_id)
                         )
                                ''')
+
+
+
         # Сохраняем изменения и закрываем соединение
         connection.commit()
         connection.close()

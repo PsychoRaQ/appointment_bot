@@ -128,8 +128,8 @@ def get_open_times_with_date(date) -> list | None:
     connection = sqlite3.connect(DATABASE_PATH)
     try:
         cursor = connection.cursor()
-        cursor.execute(f'SELECT date, time FROM Slots WHERE date = ? AND is_locked = ? AND user_id = ?',
-                       (date, False, False))
+        cursor.execute(f'SELECT time FROM Slots WHERE is_locked = ? AND user_id = ? AND date = ?',
+                       (False, False, date))
         result = cursor.fetchall()
         connection.close()
         return result

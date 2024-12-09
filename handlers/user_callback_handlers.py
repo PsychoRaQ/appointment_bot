@@ -11,6 +11,9 @@ from lexicon.lexicon import LEXICON
 from services import database_func, service_func, callback_data_factory
 import logging
 
+
+
+
 router = Router()
 router.message.filter(UserIsRegister(), StateFilter(default_state))
 logger = logging.getLogger(__name__)
