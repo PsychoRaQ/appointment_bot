@@ -1,16 +1,26 @@
 import asyncio
+import sys
+
 from aiogram import Dispatcher, Bot
 from aiogram_dialog import setup_dialogs
+
+from sqlalchemy.ext.asyncio import create_async_engine
+from sqlalchemy import text
+from sqlalchemy.schema import CreateTable
+from sqlalchemy.dialects import postgresql
+from sqlalchemy.engine import create_engine
 
 from handlers import (user_handlers, unregister_handlers,
                       general_admin_handlers, admin_handlers,
                       user_callback_handlers, admin_callback_handlers)
 from keyboards.main_menu import set_main_menu
-from database.database_init import process_checking_database
+import db
+from db import database_init
+
 import logging
 from aiogram.fsm.storage.redis import DefaultKeyBuilder, Redis, RedisStorage
 from dialogs import dialogs
-from config_data.config import load_config
+from config_data.config import load_config, load_database
 
 
 async def main() -> None:
@@ -25,12 +35,30 @@ async def main() -> None:
 
     # Настройка конфига
     config = load_config('.env')
-    bot_token = config.tg_bot.token  # токен бота
-    grand_admin_id = config.tg_bot.admin_id  # id телеграмм-аккаунта главного админа (через него настраиваем функционал)
+    bot_token = config.token  # токен бота
+    grand_admin_id = config.admin_id  # id телеграмм-аккаунта главного админа (через него настраиваем функционал)
+
+    database_config = load_database()  # загрузка конфигурации базы данных
+
+    # создаем движок Алхимии с параметрами из конфига
+    engine = create_engine(url=database_config.dsn, echo=database_config.is_echo)
+
+    # # Открытие нового соединение с базой
+    # async with engine.begin() as conn:
+    #     # Выполнение обычного текстового запроса
+    #     await conn.execute(text("SELECT 1"))
+
+    # Удаление предыдущей версии базы
+    # и создание таблиц заново
+    db.Base.metadata.drop_all(engine)
+    db.Base.metadata.create_all(engine)
 
     # инициализация бота и диспетчера
     bot = Bot(token=bot_token)
-    dp = Dispatcher(storage=storage)
+    dp = Dispatcher(storage=storage, db_engine=engine)
+
+    # Печатает на экран SQL-запрос для создания таблицы в PostgreSQL
+    print(CreateTable(db.Users.__table__).compile(dialect=postgresql.dialect()))
 
     # передача переменных из конфига в диспетчер
     dp.workflow_data.update({'grand_admin_id': grand_admin_id, })
@@ -49,7 +77,7 @@ async def main() -> None:
     setup_dialogs(dp)
 
     # инициализация базы данных
-    await process_checking_database()
+    await db.database_init.process_checking_database()
 
     # устанавливаем меню для бота
     await set_main_menu(bot)
@@ -60,6 +88,8 @@ async def main() -> None:
 
 
 if __name__ == '__main__':
+    if sys.platform == "win32":
+        asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
     asyncio.run(main())
 
 # ######################
