@@ -3,8 +3,8 @@ from aiogram.filters import CommandStart
 from aiogram.types import Message
 from aiogram_dialog import DialogManager, StartMode
 
-from filters.filters import UserIsRegister
-from fsm.states import StartSG
+from src.filters.filters import UserIsRegister
+from src.fsm.states import StartSG
 
 router = Router()
 router.message.filter(~UserIsRegister())
@@ -16,6 +16,7 @@ router.message.filter(~UserIsRegister())
 
 
 # Хэндлер на команду "Старт" для незарегистрированных пользователей
+# Запуск процесса регистрации пользователя
 @router.message(CommandStart())
 async def command_start_process(message: Message, dialog_manager: DialogManager):
     await dialog_manager.start(state=StartSG.start, mode=StartMode.RESET_STACK)

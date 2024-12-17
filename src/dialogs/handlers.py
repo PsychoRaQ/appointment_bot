@@ -1,11 +1,17 @@
-from aiogram.types import Message, CallbackQuery, User
+import datetime
+
+from aiogram.types import Message, CallbackQuery
 from aiogram_dialog import DialogManager, ShowMode
 from aiogram_dialog.widgets.input import ManagedTextInput
 from aiogram_dialog.widgets.kbd import Button, Select
 
-from fsm.states import (StartSG, MainMenuSG, UserAppointmentSG, UserNewAppointmentSG)
-from services.database_func import new_user_to_db, user_take_datetime
-from services.service_func import refactor_phone_number, return_user_is_max_appointment
+from src.fsm.states import (StartSG, MainMenuSG, UserAppointmentSG, UserNewAppointmentSG)
+from src.services.database_func import add_new_user, user_confirm_datetime, get_slot_with_user_id
+from src.services.service_func import return_user_is_max_appointment, refactor_phone_number
+
+'''
+Хэндлеры для всех диалогов и геттеров
+'''
 
 
 #########################################################
@@ -28,15 +34,11 @@ async def confirm_registration(callback: CallbackQuery, button: Button, dialog_m
     user_id = callback.message.chat.id
     username = dialog_manager.dialog_data.get('username')
     phone = dialog_manager.dialog_data.get('phone')
-    if new_user_to_db(user_id, username, phone):
-        await dialog_manager.done()
-        # await callback.message.answer(
-        #     text=f'{username}, Вы успешно зарегистрировались и можете использовать весь функционал бота.\n\n'
-        #          f'Если меню не открылось автоматически - пожалуйста, откройте его при помощи кнопки слева от чата, или'
-        #          f'отправьте команду "/start" в чат.')
-        await dialog_manager.start(state=MainMenuSG.main_menu)
-    else:
-        print('Ошибка при регистрации')
+    session = dialog_manager.middleware_data['session']
+
+    await add_new_user(session, user_id, username, phone)
+    await dialog_manager.done()
+    await dialog_manager.start(MainMenuSG.main_menu)
 
 
 # Обработчик-фильтр для проверки корректности имени пользователя
@@ -66,7 +68,7 @@ async def correct_input(
     if text.isalpha():
         await dialog_manager.update({'username': text})
     else:
-        phone = refactor_phone_number(text)
+        phone = await refactor_phone_number(text)
         await dialog_manager.update({'phone': phone})
     await dialog_manager.next(show_mode=ShowMode.EDIT)
 
@@ -90,15 +92,19 @@ async def user_dialog_selection(callback: CallbackQuery, widget: Select,
                                 dialog_manager: DialogManager, data: str):
     match data:
         case 'new_appointment':
-            print(callback.message.chat.id)
-            if return_user_is_max_appointment(callback.message.chat.id):
+            result = await return_user_is_max_appointment(dialog_manager.middleware_data['session'],
+                                                          callback.message.chat.id)
+            if result:
                 await dialog_manager.start(state=UserNewAppointmentSG.calendary_first_month)
             else:
-                print('Чет многовато')
-        case 'delete_appointment':
-            print(data)
+                await dialog_manager.start(state=UserNewAppointmentSG.user_max_appointment)
         case 'my_appointment':
-            await dialog_manager.start(state=UserAppointmentSG.main)
+            result = await get_slot_with_user_id(dialog_manager.middleware_data['session'],
+                                                 callback.message.chat.id)
+            if len(result) == 0:
+                await dialog_manager.start(state=UserAppointmentSG.no_one_appointment)
+            else:
+                await dialog_manager.start(state=UserAppointmentSG.main)
         case 'help':
             print(data)
         case 'feedback':
@@ -123,10 +129,44 @@ async def user_new_time_appointment(callback: CallbackQuery, widget: Select,
                                     dialog_manager: DialogManager, data: str):
     if data:
         await dialog_manager.update({'time': data})
-        time = data
-        date = dialog_manager.dialog_data.get('date').split('-')
-        new_date = f'{date[2]}-{date[1]}-{date[0]}'
-        if user_take_datetime(new_date, time, callback.message.chat.id):
+
+        convert_time = list(map(int, data.split(':')))
+        convert_date = list(map(int, dialog_manager.dialog_data.get('date').split('-')))
+
+        time = datetime.time(*convert_time)
+        date = datetime.date(convert_date[2], convert_date[1], convert_date[0])
+        session = dialog_manager.middleware_data['session']
+        status = 'confirm'
+        result = await user_confirm_datetime(callback.message.chat.id, date, time, status, session)
+        if result:
             await dialog_manager.switch_to(state=UserNewAppointmentSG.confirm_datetime)
         else:
             await dialog_manager.switch_to(state=UserNewAppointmentSG.error_confirm)
+
+
+################################################################################
+# ПОЛЬЗОВАТЕЛЬ ХОЧЕТ ОТМЕНИТЬ ЗАПИСЬ
+
+# пользователь выбрал "слот" для отмены
+async def user_delete_appointment(callback: CallbackQuery, widget: Select,
+                                  dialog_manager: DialogManager, data: str):
+    date, time = data.split('-')
+    date = list(map(int, date.split('.')))
+    time = list(map(int, time.split(':')))
+
+    await dialog_manager.update({'date': date, 'time': time, 'datetime_for_user': data})
+    await dialog_manager.next(show_mode=ShowMode.EDIT)
+
+
+# пользователь подтвердил удаление выбранного слота
+async def user_is_confirm_delete_appointment(callback: CallbackQuery, widget: Select,
+                                             dialog_manager: DialogManager):
+    convert_date = dialog_manager.dialog_data.get('date')
+    user_id = callback.message.chat.id
+    session = dialog_manager.middleware_data['session']
+    date = datetime.date(convert_date[2], convert_date[1], convert_date[0])
+    time = datetime.time(*dialog_manager.dialog_data.get('time'))
+    status = 'delete'
+
+    await user_confirm_datetime(user_id, date, time, status, session)
+    await dialog_manager.next(show_mode=ShowMode.EDIT)

@@ -3,14 +3,26 @@ from aiogram_dialog.widgets.input import TextInput
 from aiogram_dialog.widgets.kbd import Button, Row, Back, Next, Select, Group, Cancel, SwitchTo
 from aiogram_dialog.widgets.text import Const, Format, List
 
-from dialogs.getters import (get_userdata, get_main_menu, get_user_appointments, get_free_dates_on_current_month,
-                             get_free_dates_on_next_month, get_free_times_from_date, get_confirm_datetime)
-from dialogs.handlers import (check_username, confirm_registration, correct_input, error_input, check_phone,
-                              cancel_registration, go_next)
-from dialogs.handlers import (user_dialog_selection)
-from dialogs.handlers import (user_new_date_appointment, user_new_time_appointment)
+# все геттеры прописаны в одном месте
+from src.dialogs.getters import (get_userdata, get_main_menu, get_user_appointments, get_free_dates_on_current_month,
+                                 get_free_dates_on_next_month, get_free_times_from_date, get_confirm_datetime)
+# все состояния прописаны в одном месте
+from src.fsm.states import (MainMenuSG, StartSG, UserAppointmentSG, UserNewAppointmentSG)
 
-from fsm.states import (MainMenuSG, StartSG, UserAppointmentSG, UserNewAppointmentSG)
+# хэндлеры для диалога регистрации
+from src.dialogs.handlers import (check_username, confirm_registration, correct_input, error_input, check_phone,
+                                  cancel_registration, go_next)
+# хэндлеры для диалога-селектора в главном меню
+from src.dialogs.handlers import (user_dialog_selection)
+# хэндлеры для диалога записи пользователя
+from src.dialogs.handlers import (user_new_date_appointment, user_new_time_appointment)
+# хэндлеры для диалога удаления записей
+from src.dialogs.handlers import (user_delete_appointment, user_is_confirm_delete_appointment)
+
+'''
+Все диалоги бота
+Возможно, потом нужно перенести текстовую часть в другое место
+'''
 
 # Диалог регистрации пользователя
 start_dialog = Dialog(
@@ -21,7 +33,6 @@ start_dialog = Dialog(
         state=StartSG.start
     ),
     Window(
-
         Const(
             'Давайте познакомимся?\nПожалуйста, отправьте в чат Ваше имя.\n(Не более 10 символов)\n\nЕсли хотите взять Ваше имя из телеграмма - просто нажмите "Продолжить"'),
         TextInput(
@@ -58,7 +69,6 @@ start_dialog = Dialog(
         state=StartSG.confirm
     ),
     getter=get_userdata,
-
 )
 
 # Главное меню
@@ -80,7 +90,7 @@ main_menu_dialog = Dialog(
     ),
 )
 
-# пользователь выбрал "Мои записи"
+# пользователь выбрал "Мои записи" (+ отмена записей)
 user_appointment_dialog = Dialog(
     Window(
         Const(text='Ваши записи:\n'),
@@ -88,17 +98,48 @@ user_appointment_dialog = Dialog(
              items='user_appointment'),
         Next(Const(text='Отменить запись'),
              id='next_button'),
-        Cancel(Const(text='Назад'),
+        Cancel(Const(text='◀️ Назад'),
                id='cancel_button'),
         getter=get_user_appointments,
         state=UserAppointmentSG.main,
     ),
     Window(
         Const(text='Выберите запись для отмены:'),
-        Cancel(Const(text='В главное меню'),
-               id='cancel_button'),
+        Group(
+            Select(
+                Format('❌ {item[0]} - {item[1]} ❌'),
+                id='datetime',
+                item_id_getter=lambda x: f'{x[0]}-{x[1]}',
+                items='user_appointment',
+                on_click=user_delete_appointment,
+            ),
+            width=1,
+        ),
+        Back(Const(text='◀️ Назад'),
+             id='back_button'),
         getter=get_user_appointments,
-        state=UserAppointmentSG.delete_appointment,
+        state=UserAppointmentSG.delete_appointment_datetime,
+    ),
+    Window(
+        Format(text='Вы точно хотите отменить свою запись на {datetime_for_user}:'),
+        Button(text=Const('Подтвердить отмену'), id='del_conf_bnt', on_click=user_is_confirm_delete_appointment),
+        Back(Const(text='◀️ Назад'),
+             id='back_button'),
+        getter=get_user_appointments,
+        state=UserAppointmentSG.delete_appointment_confirm,
+    ),
+    Window(
+        Format(text='Ваша запись на {datetime_for_user} была отменена.'),
+        Cancel(Const(text='В главное меню'),
+               id='back_button'),
+        getter=get_user_appointments,
+        state=UserAppointmentSG.delete_appointment_result,
+    ),
+    Window(
+        Const(text='Записи не найдены.\nЧтобы записаться нажмите кнопку "Записаться" в главном меню бота.'),
+        Cancel(Const(text='Главное меню'),
+               id='cancel_button'),
+        state=UserAppointmentSG.no_one_appointment,
     ),
 )
 
@@ -193,5 +234,13 @@ user_new_appointment_dialog = Dialog(
            Cancel(Const(text='Главное меню'), id='cancel_button'),
            state=UserNewAppointmentSG.error_confirm,
            getter=get_confirm_datetime,
-           )
+           ),
+    Window(
+        Const(
+            text='Вы записаны максимальное количество раз.\nЧтобы изменить время записи, пожалуйста, отмените одну из Ваших записей.\n\n'
+                 '(Мои записи -> отменить запись)'),
+        Cancel(Const(text='Главное меню'),
+               id='cancel_button'),
+        state=UserNewAppointmentSG.user_max_appointment,
+    ),
 )

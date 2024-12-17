@@ -2,6 +2,7 @@ import asyncio
 from logging.config import fileConfig
 
 from src.db import Base
+from src.db.models import Users, Slots  # noqa
 
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection

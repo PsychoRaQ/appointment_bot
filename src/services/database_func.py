@@ -1,219 +1,78 @@
-from pathlib import Path
-import sqlite3
-import config_data.config
-
-DATABASE_PATH = Path(config_data.config.DATABASE_PATH)
+from src.db.models import Users, Slots
+from sqlalchemy import select, and_
+from sqlalchemy.dialects.postgresql import insert as upsert
+from sqlalchemy.ext.asyncio import AsyncSession
 
 import logging
 
 logger = logging.getLogger(__name__)
 
 '''
-Функции обеспечивающие связь с базой данных и
-выполнение SQL запросов
+Функции для работы с базой данных
+через алхимию
+Потом подключить логирование
 '''
 
 
-# Добавляем пользователя в БД (если его там нет)
-def new_user_to_db(user_id, username, phone) -> bool:
-    connection = sqlite3.connect(DATABASE_PATH)
-    try:
-        cursor = connection.cursor()
-        cursor.execute(f'INSERT INTO Users(user_id, username, phone) Values(?,?,?)', (user_id, username, phone))
-        connection.commit()
-        connection.close()
-        return True
-    except Exception as e:
-        logger.warning(e)
-        connection.close()
-        return False
+# Добавляем пользователя в базу данных
+async def add_new_user(session: AsyncSession, user_id, username, phone):
+    stmt = upsert(Users).values(
+        {
+            'telegram_id': user_id,
+            'username': username,
+            'phone': phone
+        }
+    )
+
+    stmt = stmt.on_conflict_do_update(index_elements=['telegram_id'],
+                                      set_=dict(username=username, phone=phone),
+                                      )
+    await session.execute(stmt)
+    await session.commit()
 
 
-# Проверяем наличие пользователя в БД
-def user_is_sign(user_id) -> bool:
-    connection = sqlite3.connect(DATABASE_PATH)
-    try:
-        cursor = connection.cursor()
-        cursor.execute(f'SELECT user_id FROM Users WHERE user_id = ?', (user_id,))
-        result = cursor.fetchone()
-        connection.close()
-        if result:
-            return user_id in result
-        return False
-    except Exception as e:
-        logger.warning(e)
-        connection.close()
-        return False
+# Получение пользователя из базы по его telegram_id
+async def user_is_register(session: AsyncSession, user_id):
+    result = await session.get(Users, user_id)
+    return result
 
 
-# Возвращаем все данные пользователя по его user_id
-def get_userdata(user_id) -> list | None:
-    connection = sqlite3.connect(DATABASE_PATH)
-    try:
-        cursor = connection.cursor()
-        cursor.execute(f'SELECT * FROM Users WHERE user_id = ?', (user_id,))
-        result = cursor.fetchall()
-        connection.close()
-        return result
-    except Exception as e:
-        logger.warning(e)
-        connection.close()
-        return None
+# Получение количества занятых слотов пользователем по его telegram_id
+async def get_slot_with_user_id(session: AsyncSession, user_id):
+    stmt = select(Slots).where(Slots.user_id == user_id).order_by(Slots.date, Slots.time)  # noqa
+    result = await session.execute(stmt)
+    return result.scalars().all()
 
 
-# Добавляет в таблицу Date все даты из указанного месяца
-def add_new_month_to_db(month: int) -> bool:
-    connection = sqlite3.connect(DATABASE_PATH)
-    try:
-        cursor = connection.cursor()
-        cursor.executemany('INSERT INTO Dates(Date) Values (?)', zip(service_func.create_date_list(month)))
-        connection.commit()
-        connection.close()
-        return True
-    except Exception as e:
-        logger.warning(e)
-        connection.close()
-        return False
+# Получение свободных дат для записи пользователя
+async def get_free_dates_from_db(session: AsyncSession):
+    stmt = select(Slots).where(and_(Slots.is_locked == 0, Slots.user_id == 0)).order_by(Slots.date, Slots.time)
+    result = await session.execute(stmt)
+    return result.scalars()
 
 
-# Добавляет в таблицу Times время в диапазоне minute_range. (00:00 - 00:15 - 00:30 - ... - 23:45)
-def add_new_time_to_db(minute_range: int) -> bool:
-    connection = sqlite3.connect(DATABASE_PATH)
-    try:
-        cursor = connection.cursor()
-        cursor.executemany('INSERT INTO Times(Time) Values (?)',
-                           zip(service_func.create_time_in_range_list(minute_range)))
-        connection.commit()
-        connection.close()
-        return True
-    except Exception as e:
-        logger.warning(e)
-        connection.close()
-        return False
+# Получение свободных временных слотов на выбранную дату
+async def get_free_time_on_date_from_db(date, session: AsyncSession):
+    stmt = select(Slots).where(and_(Slots.date == date, Slots.user_id == 0, Slots.is_locked == 0)).order_by(Slots.time)
+    result = await session.execute(stmt)
+    return result.scalars()
 
 
-# Выборка из базы Slots по двум полям key1 = value1, key2 = value2
-def get_two_slots_where(key1, value1, key2, value2, what) -> list | None:
-    connection = sqlite3.connect(DATABASE_PATH)
-    try:
-        cursor = connection.cursor()
-        cursor.execute(f'SELECT {what} FROM Slots WHERE {key1} = ? AND {key2} = ? ORDER BY date, time',
-                       (value1, value2))
-        result = cursor.fetchall()
-        connection.close()
-        return result
-    except Exception as e:
-        logger.warning(e)
-        connection.close()
-        return None
-
-
-# Выборка из базы Slots по одному полю key1 = value1
-def get_one_slots_where(key1, value1, what) -> list | None:
-    connection = sqlite3.connect(DATABASE_PATH)
-    try:
-        cursor = connection.cursor()
-        cursor.execute(f'SELECT {what} FROM Slots WHERE {key1} = ? ORDER BY date, time', (value1,))
-        result = cursor.fetchall()
-        connection.close()
-        return result
-    except Exception as e:
-        logger.warning(e)
-        connection.close()
-        return None
-
-
-# Выборка из базы Slots свободных доступных для записи дат
-def get_open_times_with_date(date) -> list | None:
-    connection = sqlite3.connect(DATABASE_PATH)
-    try:
-        cursor = connection.cursor()
-        cursor.execute(f'SELECT time FROM Slots WHERE is_locked = ? AND user_id = ? AND date = ?',
-                       (False, False, date))
-        result = cursor.fetchall()
-        connection.close()
-        return result
-    except Exception as e:
-        logger.warning(e)
-        connection.close()
-        return None
-
-
-# Добавляем в базу Slots новый слот, если в нем нет такой же связки Дата-Время
-def add_new_slot(date, time) -> bool:
-    connection = sqlite3.connect(DATABASE_PATH)
-    try:
-        cursor = connection.cursor()
-        cursor.execute(f'SELECT * FROM Slots WHERE date = ? AND time = ?', (date, time))
-        result = cursor.fetchall()
-        if result:
+# Изменение статуса слота со стороны пользователя (запись или отмена)
+async def user_confirm_datetime(user_id, date, time, status, session: AsyncSession):
+    stmt = select(Slots).where(and_(Slots.date == date, Slots.time == time))
+    result = await session.execute(stmt)
+    slot = result.scalar()
+    match status:
+        case 'confirm':
+            if slot.user_id != 0:
+                return False
+            slot.user_id = user_id
+            await session.commit()
+            return True
+        case 'delete':
+            slot.user_id = 0
+            await session.commit()
+            return True
+        case _:
             return False
-        cursor.execute(f'INSERT INTO Slots(date,time) Values (?,?)', (date, time))
-        connection.commit()
-        connection.close()
-        return True
-    except Exception as e:
-        logger.warning(e)
-        connection.close()
-        return False
-
-
-# Изменение "слота" в таблице Slots, юзер занимает/освобождает
-def user_take_datetime(date, time, user_id) -> bool:
-    connection = sqlite3.connect(DATABASE_PATH)
-    try:
-        cursor = connection.cursor()
-        cursor.execute(f'UPDATE Slots SET user_id = ? WHERE date = ? AND time = ?', (user_id, date, time))
-        connection.commit()
-        connection.close()
-        return True
-    except Exception as e:
-        logger.warning(e)
-        return False
-
-
-# Выборка слотов юзера по его id, возвращает время/дату для отображения и дальнейшего изменения через функцию выше
-def get_user_appointment(user_id) -> list | None:
-    connection = sqlite3.connect(DATABASE_PATH)
-    try:
-        cursor = connection.cursor()
-        cursor.execute(f'SELECT date, time FROM Slots WHERE user_id = ? ORDER BY date, time', (user_id,))
-        result = cursor.fetchall()
-        connection.close()
-        return result
-    except Exception as e:
-        logger.warning(e)
-        connection.close()
-        return None
-
-
-# Возвращаем все Даты или Время из таблиц Dates, Times (по выбору аргумента)
-# Для отображения админ-календаря изменения слотов
-def return_dates_or_times_to_admin_calendary(table_name) -> list | None:
-    connection = sqlite3.connect(DATABASE_PATH)
-    try:
-        cursor = connection.cursor()
-        cursor.execute(f'SELECT * FROM {table_name}')
-        result = cursor.fetchall()
-        connection.close()
-        return result
-    except Exception as e:
-        logger.warning(e)
-        connection.close()
-        return None
-
-
-# Блокируем слот и очищаем его от пользователя
-# или разблокируем его
-def admin_change_is_locked_status(date, time, status) -> bool:
-    connection = sqlite3.connect(DATABASE_PATH)
-    try:
-        cursor = connection.cursor()
-        cursor.execute(f'UPDATE Slots SET user_id = 0, is_locked = ?  WHERE date = ? AND time = ?',
-                       (status, date, time))
-        connection.commit()
-        connection.close()
-        return True
-    except Exception as e:
-        logger.warning(e)
-        return False
