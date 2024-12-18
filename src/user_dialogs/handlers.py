@@ -5,7 +5,7 @@ from aiogram_dialog import DialogManager, ShowMode
 from aiogram_dialog.widgets.input import ManagedTextInput
 from aiogram_dialog.widgets.kbd import Button, Select
 
-from src.fsm.states import (StartSG, MainMenuSG, UserAppointmentSG, UserNewAppointmentSG)
+from src.fsm.user_states import (StartSG, MainMenuSG, UserAppointmentSG, UserNewAppointmentSG)
 from src.services.database_func import add_new_user, user_confirm_datetime, get_slot_with_user_id
 from src.services.service_func import return_user_is_max_appointment, refactor_phone_number
 

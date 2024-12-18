@@ -6,10 +6,10 @@ from aiogram_dialog import setup_dialogs
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from sqlalchemy import text
 from aiogram.fsm.storage.redis import DefaultKeyBuilder, Redis, RedisStorage
-from dialogs import dialogs
+from user_dialogs import dialogs as user_dg
 from config_data.config import load_config, load_database
 from middlewares.session import DbSessionMiddleware
-from handlers import (user_handlers, unregister_handlers)
+from handlers import (user_handlers, unregister_handlers, admin_handlers)
 
 
 async def main() -> None:
@@ -25,7 +25,7 @@ async def main() -> None:
     # Настройка конфига
     config = load_config('.env')
     bot_token = config.token  # токен бота
-    admin_ids = config.admin_id  # id телеграмм-аккаунта главного админа (через него настраиваем функционал)
+    admin_ids = config.admin_id  # id телеграмм-аккаунта админа
 
     database_config = load_database()  # загрузка конфигурации базы данных
 
@@ -48,14 +48,15 @@ async def main() -> None:
     dp.update.outer_middleware(DbSessionMiddleware(Sessionmaker))
 
     # Подключаем роутеры для хэндлеров
+    dp.include_router(admin_handlers.router)
     dp.include_router(user_handlers.router)
     dp.include_router(unregister_handlers.router)
 
     # Подключаем роутеры для диалогов
-    dp.include_router(dialogs.main_menu_dialog)
-    dp.include_router(dialogs.start_dialog)
-    dp.include_router(dialogs.user_appointment_dialog)
-    dp.include_router(dialogs.user_new_appointment_dialog)
+    dp.include_router(user_dg.main_menu_dialog)
+    dp.include_router(user_dg.start_dialog)
+    dp.include_router(user_dg.user_appointment_dialog)
+    dp.include_router(user_dg.user_new_appointment_dialog)
 
     # Подключаем диалоги
     setup_dialogs(dp)

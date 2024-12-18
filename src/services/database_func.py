@@ -14,6 +14,8 @@ logger = logging.getLogger(__name__)
 '''
 
 
+### Функционал пользователя
+
 # Добавляем пользователя в базу данных
 async def add_new_user(session: AsyncSession, user_id, username, phone):
     stmt = upsert(Users).values(
@@ -76,3 +78,5 @@ async def user_confirm_datetime(user_id, date, time, status, session: AsyncSessi
             return True
         case _:
             return False
+
+# Функционал админки

@@ -4,20 +4,20 @@ from aiogram_dialog.widgets.kbd import Button, Row, Back, Next, Select, Group, C
 from aiogram_dialog.widgets.text import Const, Format, List
 
 # все геттеры прописаны в одном месте
-from src.dialogs.getters import (get_userdata, get_main_menu, get_user_appointments, get_free_dates_on_current_month,
-                                 get_free_dates_on_next_month, get_free_times_from_date, get_confirm_datetime)
+from src.user_dialogs.getters import (get_userdata, get_main_menu, get_user_appointments, get_free_dates_on_current_month,
+                                      get_free_dates_on_next_month, get_free_times_from_date, get_confirm_datetime)
 # все состояния прописаны в одном месте
-from src.fsm.states import (MainMenuSG, StartSG, UserAppointmentSG, UserNewAppointmentSG)
+from src.fsm.user_states import (MainMenuSG, StartSG, UserAppointmentSG, UserNewAppointmentSG)
 
 # хэндлеры для диалога регистрации
-from src.dialogs.handlers import (check_username, confirm_registration, correct_input, error_input, check_phone,
-                                  cancel_registration, go_next)
+from src.user_dialogs.handlers import (check_username, confirm_registration, correct_input, error_input, check_phone,
+                                       cancel_registration, go_next)
 # хэндлеры для диалога-селектора в главном меню
-from src.dialogs.handlers import (user_dialog_selection)
+from src.user_dialogs.handlers import (user_dialog_selection)
 # хэндлеры для диалога записи пользователя
-from src.dialogs.handlers import (user_new_date_appointment, user_new_time_appointment)
+from src.user_dialogs.handlers import (user_new_date_appointment, user_new_time_appointment)
 # хэндлеры для диалога удаления записей
-from src.dialogs.handlers import (user_delete_appointment, user_is_confirm_delete_appointment)
+from src.user_dialogs.handlers import (user_delete_appointment, user_is_confirm_delete_appointment)
 
 '''
 Все диалоги бота
