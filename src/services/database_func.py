@@ -47,8 +47,11 @@ async def get_slot_with_user_id(session: AsyncSession, user_id):
 
 
 # Получение свободных дат для записи пользователя
-async def get_free_dates_from_db(session: AsyncSession):
-    stmt = select(Slots).where(and_(Slots.is_locked == 0, Slots.user_id == 0)).order_by(Slots.date, Slots.time)
+async def get_free_dates_from_db(session: AsyncSession, for_admin: bool):
+    if for_admin:
+        stmt = select(Slots).where(and_(Slots.is_locked == 0)).order_by(Slots.date, Slots.time)
+    else:
+        stmt = select(Slots).where(and_(Slots.is_locked == 0, Slots.user_id == 0)).order_by(Slots.date, Slots.time)
     result = await session.execute(stmt)
     return result.scalars()
 
@@ -79,4 +82,43 @@ async def user_confirm_datetime(user_id, date, time, status, session: AsyncSessi
         case _:
             return False
 
+
 # Функционал админки
+
+# Получаем все "открытые" слоты на нужную дату
+async def get_slots_list_from_db(date, session: AsyncSession):
+    stmt = select(Slots).where(and_(Slots.date == date, Slots.is_locked == 0)).order_by(Slots.time)
+    result = await session.execute(stmt)
+    return result.scalars()
+
+
+# Получаем конкретный слот для дальнейшей работы
+async def get_slot_from_db(date, time, session: AsyncSession):
+    stmt = select(Slots).where(and_(Slots.date == date, Slots.time == time))
+    result = await session.execute(stmt)
+    slot = result.scalar()
+    return slot
+
+
+# Добавление в базу нового слота (если его нет)
+async def add_new_time_slot(date, time, session: AsyncSession):
+    stmt = upsert(Slots).values(
+        {
+            'date': date,
+            'time': time,
+        }
+    )
+    await session.execute(stmt)
+    await session.commit()
+
+
+# Изменение статуса слота администратором (универсальная функция для работы админа со слотами)
+async def admin_change_slot_data(date, time, user_id, is_locked, session: AsyncSession):
+    stmt = select(Slots).where(and_(Slots.date == date, Slots.time == time))
+    result = await session.execute(stmt)
+    slot = result.scalar()
+
+    slot.user_id = user_id
+    slot.is_locked = is_locked
+    await session.commit()
+    return True

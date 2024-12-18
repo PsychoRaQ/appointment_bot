@@ -10,7 +10,7 @@ from src.services.database_func import add_new_user, user_confirm_datetime, get_
 from src.services.service_func import return_user_is_max_appointment, refactor_phone_number
 
 '''
-Хэндлеры для всех диалогов и геттеров
+Хэндлеры для всех диалогов и геттеров (пользователь)
 '''
 
 

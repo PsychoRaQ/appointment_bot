@@ -23,7 +23,7 @@ def load_config(path: str | None = None) -> TgBot:
 
     return TgBot(
         token=env('BOT_TOKEN'),
-        admin_id=[int(i) for i in env.list('ADMIN_IDS') if i != '']
+        admin_id=[int(i) for i in env.list('ADMIN_IDS') if i != ''],
     )
 
 

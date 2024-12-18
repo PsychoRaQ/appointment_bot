@@ -11,6 +11,8 @@ logger = logging.getLogger(__name__)
 '''
 
 
+####### ПОЛЬЗОВАТЕЛИ
+
 # Создание списка с датами на месяц (month)
 # Основная функция, здесь работа с датами и заготовка под конечный результат
 async def create_date_list(month, session) -> list:
@@ -25,18 +27,18 @@ async def create_date_list(month, session) -> list:
         day = 28
     date_lst = [f'{i}' for i in range(1, day + 1)]
     date_lst = list((map(lambda x: '0' + x if len(x) == 1 else x, date_lst)))
-    date_lst = await delete_locked_dates(date_lst, month, year, session)
+    date_lst = await delete_locked_dates(date_lst, month, year, session, False)
     return date_lst
 
 
 # Вспомогательная функция для создания списка с датами, здесь получение данных из БД и подстановка их
 # в кортеж для отправки в геттер
-async def delete_locked_dates(date_lst, month, year, session) -> list:
+async def delete_locked_dates(date_lst, month, year, session, for_admin: bool) -> list:
     cur_month = str(month)
     year = str(year)
     cur_month = f'0{cur_month}' if len(cur_month) == 1 else cur_month
 
-    dates_scalar = await get_free_dates_from_db(session)
+    dates_scalar = await get_free_dates_from_db(session, for_admin)
 
     dates_list = []
     if dates_scalar:
@@ -48,7 +50,12 @@ async def delete_locked_dates(date_lst, month, year, session) -> list:
                 continue
             else:
                 dates_list.append(str(datetime.date.strftime(date, '%d.%m')))
-    result = [(i, f'{i}-{cur_month}-{year}') if f'{i}.{cur_month}' in dates_list else (' ', 'locked') for i in date_lst]
+    if for_admin:
+        result = [(f'{i} ✅', f'{i}-{cur_month}-{year}') if f'{i}.{cur_month}' in dates_list else (
+            f'{i} ❌', f'{i}-{cur_month}-{year}') for i in date_lst]
+    else:
+        result = [(i, f'{i}-{cur_month}-{year}') if f'{i}.{cur_month}' in dates_list else (' ', 'locked') for i in
+                  date_lst]
     return result
 
 
@@ -68,3 +75,34 @@ async def refactor_phone_number(number):
         return number.replace('+7', '8', 1)
     else:
         return number.replace('7', '8', 1)
+
+
+############### АДМИНКА
+
+# Создание списка с датами на месяц (month)
+# Основная функция, здесь работа с датами и заготовка под конечный результат
+async def create_admin_date_list(month, session) -> list:
+    years = (2024, 2028, 2032, 2036, 2040)
+    day = 31 if month in (1, 3, 5, 7, 8, 10, 12) else 30
+    year = datetime.datetime.today().year
+    if month == 1:
+        year += 1
+    if month == 2 and year in years:
+        day = 29
+    elif month == 2 and year not in years:
+        day = 28
+    date_lst = [f'{i}' for i in range(1, day + 1)]
+    date_lst = list((map(lambda x: '0' + x if len(x) == 1 else x, date_lst)))
+    date_lst = await delete_locked_dates(date_lst, month, year, session, True)
+    return date_lst
+
+
+# создание списка временных слотов для изменения админом
+async def create_time_slots(start, stop):
+    result = []
+    for i in range(start, stop + 1):
+        result.append(datetime.time(i))
+        result.append(datetime.time(i, 30))
+
+    result = [(f'{datetime.time.strftime(time, '%H:%M')} ❌', time) for time in result]
+    return result

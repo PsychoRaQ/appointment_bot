@@ -1,7 +1,7 @@
 from aiogram.fsm.state import State, StatesGroup
 
 '''
-Состояния для всех диалогов
+Состояния для всех диалогов (пользователи)
 '''
 
 

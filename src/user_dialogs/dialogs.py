@@ -4,7 +4,8 @@ from aiogram_dialog.widgets.kbd import Button, Row, Back, Next, Select, Group, C
 from aiogram_dialog.widgets.text import Const, Format, List
 
 # все геттеры прописаны в одном месте
-from src.user_dialogs.getters import (get_userdata, get_main_menu, get_user_appointments, get_free_dates_on_current_month,
+from src.user_dialogs.getters import (get_userdata, get_main_menu, get_user_appointments,
+                                      get_free_dates_on_current_month,
                                       get_free_dates_on_next_month, get_free_times_from_date, get_confirm_datetime)
 # все состояния прописаны в одном месте
 from src.fsm.user_states import (MainMenuSG, StartSG, UserAppointmentSG, UserNewAppointmentSG)

@@ -3,8 +3,7 @@ from aiogram.filters import CommandStart, MagicData
 from aiogram.types import Message
 from aiogram_dialog import DialogManager, StartMode
 
-from src.filters.filters import UserIsRegister
-from src.fsm.user_states import MainMenuSG
+from src.fsm.admin_states import AdminMenuSG
 
 router = Router()
 router.message.filter(MagicData(F.event.chat.id.in_(F.admin_ids)))
@@ -19,4 +18,4 @@ router.message.filter(MagicData(F.event.chat.id.in_(F.admin_ids)))
 # Открывает главное меню бота для администратора
 @router.message(CommandStart())
 async def command_start_process(message: Message, dialog_manager: DialogManager):
-    await dialog_manager.start(state=MainMenuSG.main_menu, mode=StartMode.RESET_STACK)
+    await dialog_manager.start(state=AdminMenuSG.admin_menu, mode=StartMode.RESET_STACK)
