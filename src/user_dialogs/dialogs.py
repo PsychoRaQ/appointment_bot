@@ -20,6 +20,8 @@ from src.user_dialogs.handlers import (user_new_date_appointment, user_new_time_
 # хэндлеры для диалога удаления записей
 from src.user_dialogs.handlers import (user_delete_appointment, user_is_confirm_delete_appointment)
 
+from src.services.service_func import get_weekday_button
+
 '''
 Все диалоги бота
 Возможно, потом нужно перенести текстовую часть в другое место
@@ -151,13 +153,7 @@ user_new_appointment_dialog = Dialog(
         Button(Format(text='{current_month}'),
                id='month', ),
         Row(
-            Button(Const(text='Пн'), id=''),
-            Button(Const(text='Вт'), id=''),
-            Button(Const(text='Ср'), id=''),
-            Button(Const(text='Чт'), id=''),
-            Button(Const(text='Пт'), id=''),
-            Button(Const(text='Сб'), id=''),
-            Button(Const(text='Вс'), id=''),
+            *get_weekday_button()
         ),
         Group(
             Select(
@@ -180,15 +176,7 @@ user_new_appointment_dialog = Dialog(
         Const(text='Доступные даты для записи:'),
         Button(Format(text='{current_month}'),
                id='month', ),
-        Row(
-            Button(Const(text='Пн'), id=''),
-            Button(Const(text='Вт'), id=''),
-            Button(Const(text='Ср'), id=''),
-            Button(Const(text='Чт'), id=''),
-            Button(Const(text='Пт'), id=''),
-            Button(Const(text='Сб'), id=''),
-            Button(Const(text='Вс'), id=''),
-        ),
+        Row(*get_weekday_button()),
         Group(
             Select(
                 Format('{item[0]}'),

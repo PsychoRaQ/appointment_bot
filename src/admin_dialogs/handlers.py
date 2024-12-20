@@ -1,13 +1,14 @@
 import datetime
 
-from aiogram.types import Message, CallbackQuery
-from aiogram_dialog import DialogManager, ShowMode
-from aiogram_dialog.widgets.input import ManagedTextInput
-from aiogram_dialog.widgets.kbd import Button, Select
+from aiogram import Bot
+from aiogram.types import CallbackQuery
+from aiogram_dialog import DialogManager
+from aiogram_dialog.widgets.kbd import Select
 
+from src.config_data.config import load_config
 from src.fsm.admin_states import AdminEditCalendary
-
 from src.services.database_func import (get_slot_from_db, admin_change_slot_data, add_new_time_slot)
+from src.services.service_func import datetime_format
 
 '''
 Хэндлеры для диалогов и геттеров (админка)
@@ -46,16 +47,9 @@ async def admin_choose_date_for_edit(callback: CallbackQuery, widget: Select,
 async def admin_choose_time_slot_for_edit(callback: CallbackQuery, widget: Select,
                                           dialog_manager: DialogManager, data: str):
     await dialog_manager.update({'time': data})
-    date_convert = list(map(int, dialog_manager.dialog_data.get('date').split('-')))
-    time_convert = list(map(int, data.split(':')))
-
-    date = datetime.date(date_convert[2], date_convert[1], date_convert[0])
-    time = datetime.time(time_convert[0], time_convert[1])
-
+    date, text_date, time, text_time = await datetime_format(date=dialog_manager.dialog_data.get('date'), time=data)
     session = dialog_manager.middleware_data['session']
-
     slot = await get_slot_from_db(date, time, session)
-
     if slot:
         if slot.user_id == 0:
             status = 0 if slot.is_locked else 1
@@ -70,15 +64,19 @@ async def admin_choose_time_slot_for_edit(callback: CallbackQuery, widget: Selec
 async def admin_close_slot(callback: CallbackQuery, widget: Select,
                            dialog_manager: DialogManager):
     session = dialog_manager.middleware_data['session']
-    date = list(map(int, dialog_manager.dialog_data.get('date').split('-')))
-    date = datetime.date(date[2], date[1], date[0])
-    time = datetime.time(*list(map(int, dialog_manager.dialog_data.get('time').split(':'))))
-
+    date, text_date, time, text_time = await datetime_format(date=dialog_manager.dialog_data.get('date'),
+                                                             time=dialog_manager.dialog_data.get('time'))
     slot = await get_slot_from_db(date, time, session)
-
-    await admin_change_slot_data(date, time, 0, True, session)
-
     user_id = slot.user_id
-    # здесь сделать уведомление пользователя об отмене его записи
-
+    bot = None
+    if user_id:
+        # создаем экземпляр бота для отправки уведомления пользователю
+        config = load_config('.env')
+        bot_token = config.token  # токен бота
+        bot = Bot(token=bot_token)
+        await bot.send_message(user_id,
+                               f'Администратор отменил Вашу запись {text_date} - {text_time}')
+    await admin_change_slot_data(date, time, 0, True, session)
+    if bot:
+        await bot.session.close()
     await dialog_manager.switch_to(state=AdminEditCalendary.choose_time)

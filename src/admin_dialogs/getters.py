@@ -1,10 +1,9 @@
 import datetime
 from sqlalchemy.ext.asyncio import AsyncSession
-from aiogram.types import User
 from aiogram_dialog import DialogManager
 
 from src.services.database_func import get_slots_list_from_db, get_slot_from_db, user_is_register
-from src.services.service_func import create_admin_date_list, create_time_slots
+from src.services.service_func import create_admin_date_list, create_time_slots, datetime_format
 
 '''
 Геттеры для диалогов (админка)
@@ -68,8 +67,9 @@ async def get_free_times_from_date(dialog_manager: DialogManager, **kwargs) -> d
     if text_date == 'locked':
         return {}
     session = dialog_manager.middleware_data['session']
-    date = list(map(int, text_date.split('-')))
-    date = datetime.date(date[2], date[1], date[0])
+
+    date, text_date = await datetime_format(date=text_date)
+
     times_scalar = await get_slots_list_from_db(date, session)
     slots = await create_time_slots(6, 23)
 
@@ -97,12 +97,9 @@ async def get_free_times_from_date(dialog_manager: DialogManager, **kwargs) -> d
 async def slot_info_for_user(dialog_manager: DialogManager, **kwargs) -> dict:
     text_date = dialog_manager.dialog_data.get('date')
     session = dialog_manager.middleware_data['session']
-    date = list(map(int, text_date.split('-')))
-    date = datetime.date(date[2], date[1], date[0])
-    time = datetime.time(*list(map(int, dialog_manager.dialog_data.get('time').split(':'))))
-    text_time = f'{datetime.time.strftime(time, '%H:%M')}'
 
-    text_date = dialog_manager.dialog_data.get('date')
+    date, text_date, time, text_time = await datetime_format(date=text_date,
+                                                             time=dialog_manager.dialog_data.get('time'))
 
     slot = await get_slot_from_db(date, time, session)
     user = await user_is_register(session, slot.user_id)

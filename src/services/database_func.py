@@ -1,7 +1,7 @@
 from src.db.models import Users, Slots
 from sqlalchemy import select, and_
 from sqlalchemy.dialects.postgresql import insert as upsert
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.ext.asyncio import AsyncSession, AsyncEngine
 
 import logging
 
@@ -12,6 +12,15 @@ logger = logging.getLogger(__name__)
 через алхимию
 Потом подключить логирование
 '''
+
+
+# системное | при запуске бота получаем id всех зарегистрированных пользователей
+async def get_all_users_from_db(conn):
+    # Проверка соединения с СУБД
+    stmt = select(Users.telegram_id).select_from(Users)
+    registered_users = await conn.execute(stmt)
+    result = registered_users.scalars().all()
+    return result
 
 
 ### Функционал пользователя
@@ -31,6 +40,7 @@ async def add_new_user(session: AsyncSession, user_id, username, phone):
                                       )
     await session.execute(stmt)
     await session.commit()
+
 
 
 # Получение пользователя из базы по его telegram_id

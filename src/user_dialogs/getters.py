@@ -4,7 +4,7 @@ from aiogram.types import User
 from aiogram_dialog import DialogManager
 
 from src.services.database_func import (get_free_time_on_date_from_db, get_slot_with_user_id)
-from src.services.service_func import create_date_list
+from src.services.service_func import create_date_list, datetime_format
 
 '''
 Геттеры для диалогов (пользователь)
@@ -51,9 +51,7 @@ async def get_free_dates_on_current_month(session: AsyncSession, **kwargs) -> di
                   'Декабрь']
     current_month = datetime.date.today().month
     next_month = current_month + 1 if current_month != 12 else current_month - 12 + 1
-
     current_month_dates = await create_date_list(current_month, session)
-
     first_weekday = datetime.datetime(datetime.datetime.today().year, datetime.datetime.today().month, 1).weekday()
     if first_weekday:
         for _ in range(first_weekday):
@@ -88,9 +86,7 @@ async def get_free_dates_on_next_month(session: AsyncSession, **kwargs) -> dict:
 # Геттер для отображения доступного времени на выбранную дату
 async def get_free_times_from_date(dialog_manager: DialogManager, **kwargs) -> dict:
     session = dialog_manager.middleware_data['session']
-    text_date = dialog_manager.dialog_data.get('date')
-    date = list(map(int, text_date.split('-')))
-    date = datetime.date(date[2], date[1], date[0])
+    date, text_date = await datetime_format(date=dialog_manager.dialog_data.get('date'))
     times_scalar = await get_free_time_on_date_from_db(date, session)
     time_list = [(datetime.time.strftime(slot.time, '%H:%M'),) for slot in times_scalar]
     return {'open_time': time_list, 'date': date, 'text_date': text_date}

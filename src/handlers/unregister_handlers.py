@@ -3,11 +3,9 @@ from aiogram.filters import CommandStart
 from aiogram.types import Message
 from aiogram_dialog import DialogManager, StartMode
 
-from src.filters.filters import UserIsRegister
 from src.fsm.user_states import StartSG
 
 router = Router()
-router.message.filter(~UserIsRegister())
 
 '''
 Обработка всех message'ей

@@ -4,13 +4,16 @@ import logging
 from aiogram import Dispatcher, Bot
 from aiogram_dialog import setup_dialogs
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
-from sqlalchemy import text
+from sqlalchemy import text, select
 from aiogram.fsm.storage.redis import DefaultKeyBuilder, Redis, RedisStorage
+
+from src.db.models import Users
 from user_dialogs import dialogs as user_dg
 from admin_dialogs import dialogs as admin_dg
 from config_data.config import load_config, load_database
 from middlewares.session import DbSessionMiddleware
 from handlers import (user_handlers, unregister_handlers, admin_handlers)
+from src.services.database_func import get_all_users_from_db
 
 
 async def main() -> None:
@@ -34,13 +37,16 @@ async def main() -> None:
     engine = create_async_engine(url=database_config.dsn, echo=database_config.is_echo)
     Sessionmaker = async_sessionmaker(engine, expire_on_commit=False)  # noqa
 
-    # Проверка соединения с СУБД
-    async with engine.begin() as conn:
-        await conn.execute(text("SELECT 1"))
-
     # инициализация бота и диспетчера
     bot = Bot(token=bot_token)
     dp = Dispatcher(storage=storage, db_engine=engine)
+
+    # Проверка соединения с СУБД
+    async with engine.begin() as conn:
+        await conn.execute(text("SELECT 1"))
+        # передача в диспетчер id всех пользователей из базы
+        registered_users = await get_all_users_from_db(conn)
+        dp.workflow_data.update({'registered_users': registered_users, })
 
     # передача переменных из конфига в диспетчер
     dp.workflow_data.update({'admin_ids': admin_ids, })

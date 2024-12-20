@@ -1,5 +1,5 @@
-from aiogram import Router
-from aiogram.filters import CommandStart
+from aiogram import Router, F
+from aiogram.filters import CommandStart, MagicData, or_f
 from aiogram.types import Message
 from aiogram_dialog import DialogManager, StartMode
 
@@ -7,7 +7,7 @@ from src.filters.filters import UserIsRegister
 from src.fsm.user_states import MainMenuSG
 
 router = Router()
-router.message.filter(UserIsRegister())
+router.message.filter(or_f(MagicData(F.event.chat.id.in_(F.registered_users)), UserIsRegister()))
 
 '''
 Обработка message'ей всех зарегистрированных пользователей

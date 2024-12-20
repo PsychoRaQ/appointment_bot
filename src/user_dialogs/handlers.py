@@ -7,7 +7,7 @@ from aiogram_dialog.widgets.kbd import Button, Select
 
 from src.fsm.user_states import (StartSG, MainMenuSG, UserAppointmentSG, UserNewAppointmentSG)
 from src.services.database_func import add_new_user, user_confirm_datetime, get_slot_with_user_id
-from src.services.service_func import return_user_is_max_appointment, refactor_phone_number
+from src.services.service_func import (return_user_is_max_appointment, refactor_phone_number, datetime_format)
 
 '''
 Хэндлеры для всех диалогов и геттеров (пользователь)
@@ -129,12 +129,7 @@ async def user_new_time_appointment(callback: CallbackQuery, widget: Select,
                                     dialog_manager: DialogManager, data: str):
     if data:
         await dialog_manager.update({'time': data})
-
-        convert_time = list(map(int, data.split(':')))
-        convert_date = list(map(int, dialog_manager.dialog_data.get('date').split('-')))
-
-        time = datetime.time(*convert_time)
-        date = datetime.date(convert_date[2], convert_date[1], convert_date[0])
+        date, text_date, time, text_time = await datetime_format(date=dialog_manager.dialog_data.get('date'), time=data)
         session = dialog_manager.middleware_data['session']
         status = 'confirm'
         result = await user_confirm_datetime(callback.message.chat.id, date, time, status, session)
@@ -161,9 +156,10 @@ async def user_delete_appointment(callback: CallbackQuery, widget: Select,
 # пользователь подтвердил удаление выбранного слота
 async def user_is_confirm_delete_appointment(callback: CallbackQuery, widget: Select,
                                              dialog_manager: DialogManager):
-    convert_date = dialog_manager.dialog_data.get('date')
     user_id = callback.message.chat.id
     session = dialog_manager.middleware_data['session']
+
+    convert_date = dialog_manager.dialog_data.get('date')
     date = datetime.date(convert_date[2], convert_date[1], convert_date[0])
     time = datetime.time(*dialog_manager.dialog_data.get('time'))
     status = 'delete'
