@@ -1,3 +1,4 @@
+from aiogram import F
 from aiogram_dialog import Dialog, Window
 from aiogram_dialog.widgets.input import TextInput
 from aiogram_dialog.widgets.kbd import Button, Row, Back, Next, Select, Group, Cancel, SwitchTo
@@ -19,12 +20,15 @@ from src.user_dialogs.handlers import (user_dialog_selection)
 from src.user_dialogs.handlers import (user_new_date_appointment, user_new_time_appointment)
 # хэндлеры для диалога удаления записей
 from src.user_dialogs.handlers import (user_delete_appointment, user_is_confirm_delete_appointment)
+# хэндлеры для записи от лица администратора (с комментарием)
+from src.user_dialogs.handlers import (confirmed_admin_appointment, new_appointment_from_admin,
+                                       back_btn_adm_appointment)
 
 from src.services.service_func import get_weekday_button
 
 '''
-Все диалоги бота
-Возможно, потом нужно перенести текстовую часть в другое место
+Все диалоги бота для пользователей
+Некоторые используются из админки
 '''
 
 # Диалог регистрации пользователя
@@ -103,7 +107,6 @@ user_appointment_dialog = Dialog(
              id='next_button'),
         Cancel(Const(text='◀️ Назад'),
                id='cancel_button'),
-        getter=get_user_appointments,
         state=UserAppointmentSG.main,
     ),
     Window(
@@ -119,8 +122,9 @@ user_appointment_dialog = Dialog(
             width=1,
         ),
         Back(Const(text='◀️ Назад'),
-             id='back_button'),
-        getter=get_user_appointments,
+             id='back_button', when=~F['is_admin']),
+        Cancel(Const(text='◀️ Назад'),
+               id='cancel_button', when=F['is_admin']),
         state=UserAppointmentSG.delete_appointment_datetime,
     ),
     Window(
@@ -128,22 +132,25 @@ user_appointment_dialog = Dialog(
         Button(text=Const('Подтвердить отмену'), id='del_conf_bnt', on_click=user_is_confirm_delete_appointment),
         Back(Const(text='◀️ Назад'),
              id='back_button'),
-        getter=get_user_appointments,
         state=UserAppointmentSG.delete_appointment_confirm,
     ),
     Window(
         Format(text='Ваша запись на {datetime_for_user} была отменена.'),
         Cancel(Const(text='В главное меню'),
                id='back_button'),
-        getter=get_user_appointments,
         state=UserAppointmentSG.delete_appointment_result,
     ),
     Window(
-        Const(text='Записи не найдены.\nЧтобы записаться нажмите кнопку "Записаться" в главном меню бота.'),
+        Const(text='Записи не найдены.\nЧтобы записаться нажмите кнопку "Записаться" в главном меню бота.',
+              when=~F['is_admin']),
+        Const(
+            text='Записи не найдены.\nЧтобы вручную записать человека, нажмите кнопку "Записать пользователя" в главном меню бота.',
+            when=F['is_admin']),
         Cancel(Const(text='Главное меню'),
                id='cancel_button'),
         state=UserAppointmentSG.no_one_appointment,
     ),
+    getter=get_user_appointments,
 )
 
 # пользователь выбрал "Записаться"
@@ -219,6 +226,7 @@ user_new_appointment_dialog = Dialog(
         getter=get_confirm_datetime,
     ),
     Window(Format(text='Произошла ошибка во время записи на {date} - {time}!\n'
+                       'Возможно, выбранное время уже занято.\n'
                        'Пожалуйста, попробуйте позже или выберите другое время.'),
            Cancel(Const(text='Главное меню'), id='cancel_button'),
            state=UserNewAppointmentSG.error_confirm,
@@ -231,5 +239,35 @@ user_new_appointment_dialog = Dialog(
         Cancel(Const(text='Главное меню'),
                id='cancel_button'),
         state=UserNewAppointmentSG.user_max_appointment,
+    ),
+    Window(
+        Format(text='Создание новой записи на {date} - {time}.\n\n'
+                    'Пожалуйста, напишите комментарий для записи.\n'
+                    'Он будет отображаться при просмотре записей \n'
+                    'Важно: имя и телефон будут отображаться Ваши. Комментарий нужен чтобы Вы знали, кто записан на эту дату'),
+        TextInput(
+            id='name_input',
+            on_success=confirmed_admin_appointment,
+        ),
+        Button(Const(text='◀️ Назад'), id='back_button', on_click=back_btn_adm_appointment),
+        state=UserNewAppointmentSG.write_admin_comment,
+        getter=get_confirm_datetime,
+    ),
+    Window(
+        Format(text='Подтверждение записи:\n'
+                    'Дата: {date}\n'
+                    'Время: {time}\n'
+                    'Комментарий администратора: {comment}\n\n'),
+        Button(Const('Подтвердить запись'), id='adm_confirm_btn', on_click=new_appointment_from_admin),
+        Back(Const(text='Назад'), id='back_btn'),
+        state=UserNewAppointmentSG.admin_confirmed_new_appointment,
+        getter=get_confirm_datetime,
+    ),
+    Window(
+        Format(text='Вы успешно создали запись {date} - {time}!\n'
+                    'Комментарий: {comment}'),
+        Cancel(Const(text='Главное меню'), id='cancel_button'),
+        state=UserNewAppointmentSG.confirm_admin_datetime,
+        getter=get_confirm_datetime,
     ),
 )

@@ -1,14 +1,12 @@
-import datetime
-
-from aiogram import Bot
 from aiogram.types import CallbackQuery
 from aiogram_dialog import DialogManager
 from aiogram_dialog.widgets.kbd import Select
 
-from src.config_data.config import load_config
 from src.fsm.admin_states import AdminEditCalendary
-from src.services.database_func import (get_slot_from_db, admin_change_slot_data, add_new_time_slot)
+from src.services.database_func import (get_slot_from_db, admin_change_slot_data, add_new_time_slot,
+                                        get_slot_with_user_id)
 from src.services.service_func import datetime_format
+from src.fsm.user_states import UserNewAppointmentSG, UserAppointmentSG
 
 '''
 Хэндлеры для диалогов и геттеров (админка)
@@ -24,8 +22,15 @@ async def admin_dialog_selection(callback: CallbackQuery, widget: Select,
         case 'edit_calendary':
             await dialog_manager.start(state=AdminEditCalendary.first_month)
         case 'add_user_appointment':
-            print(data)
-        case 'delete_user_appointment':
+            await dialog_manager.start(state=UserNewAppointmentSG.calendary_first_month)
+        case 'delete_admin_appointment':
+            result = await get_slot_with_user_id(dialog_manager.middleware_data['session'],
+                                                 callback.message.chat.id)
+            if len(result) == 0:
+                await dialog_manager.start(state=UserAppointmentSG.no_one_appointment)
+            else:
+                await dialog_manager.start(state=UserAppointmentSG.delete_appointment_datetime)
+        case 'all_appointments':
             print(data)
         case 'dispatch':
             print(data)
@@ -68,15 +73,10 @@ async def admin_close_slot(callback: CallbackQuery, widget: Select,
                                                              time=dialog_manager.dialog_data.get('time'))
     slot = await get_slot_from_db(date, time, session)
     user_id = slot.user_id
-    bot = None
-    if user_id:
-        # создаем экземпляр бота для отправки уведомления пользователю
-        config = load_config('.env')
-        bot_token = config.token  # токен бота
-        bot = Bot(token=bot_token)
+    is_admin = user_id in dialog_manager.middleware_data['admin_ids']
+    if user_id and is_admin is False:
+        bot = dialog_manager.middleware_data['bot']
         await bot.send_message(user_id,
                                f'Администратор отменил Вашу запись {text_date} - {text_time}')
     await admin_change_slot_data(date, time, 0, True, session)
-    if bot:
-        await bot.session.close()
     await dialog_manager.switch_to(state=AdminEditCalendary.choose_time)

@@ -1,4 +1,6 @@
 import datetime
+
+from aiogram.types import User
 from sqlalchemy.ext.asyncio import AsyncSession
 from aiogram_dialog import DialogManager
 
@@ -13,9 +15,10 @@ from src.services.service_func import create_admin_date_list, create_time_slots,
 # Геттер для отображения главного меню
 async def get_admin_menu(**kwargs) -> dict:
     main_menu = [
-        ('Изменить расписание 📑', 'edit_calendary'),
+        ('Изменить расписание 🗓️', 'edit_calendary'),
         ('Записать пользователя 🖊️', 'add_user_appointment'),
-        ('Отменить запись пользователя ❌', 'delete_user_appointment'),
+        ('Удалить ручную запись ❌', 'delete_admin_appointment'),
+        ('Посмотреть все записи 📑', 'all_appointments'),
         ('Настройка рассылки ✉️', 'dispatch'),
     ]
     return {'main_menu': main_menu}
@@ -94,7 +97,7 @@ async def get_free_times_from_date(dialog_manager: DialogManager, **kwargs) -> d
 
 
 # Геттер для инфы о занятом слоте который пытается закрыть админ
-async def slot_info_for_user(dialog_manager: DialogManager, **kwargs) -> dict:
+async def slot_info_for_user(dialog_manager: DialogManager, event_from_user: User, **kwargs) -> dict:
     text_date = dialog_manager.dialog_data.get('date')
     session = dialog_manager.middleware_data['session']
 
@@ -102,9 +105,12 @@ async def slot_info_for_user(dialog_manager: DialogManager, **kwargs) -> dict:
                                                              time=dialog_manager.dialog_data.get('time'))
 
     slot = await get_slot_from_db(date, time, session)
+    comment = slot.comment if slot.comment else '-'
     user = await user_is_register(session, slot.user_id)
     username = user.username
     user_phone = user.phone
 
+    is_admin = user.telegram_id == event_from_user.id
+
     return {'date': date, 'time': time, 'text_date': text_date, 'text_time': text_time, 'username': username,
-            'phone': user_phone}
+            'phone': user_phone, 'comment': comment, 'is_admin': is_admin}

@@ -94,7 +94,7 @@ async def user_dialog_selection(callback: CallbackQuery, widget: Select,
         case 'new_appointment':
             result = await return_user_is_max_appointment(dialog_manager.middleware_data['session'],
                                                           callback.message.chat.id)
-            if result:
+            if result or callback.message.chat.id in dialog_manager.middleware_data.get('admin_ids'):
                 await dialog_manager.start(state=UserNewAppointmentSG.calendary_first_month)
             else:
                 await dialog_manager.start(state=UserNewAppointmentSG.user_max_appointment)
@@ -129,14 +129,18 @@ async def user_new_time_appointment(callback: CallbackQuery, widget: Select,
                                     dialog_manager: DialogManager, data: str):
     if data:
         await dialog_manager.update({'time': data})
-        date, text_date, time, text_time = await datetime_format(date=dialog_manager.dialog_data.get('date'), time=data)
-        session = dialog_manager.middleware_data['session']
-        status = 'confirm'
-        result = await user_confirm_datetime(callback.message.chat.id, date, time, status, session)
-        if result:
-            await dialog_manager.switch_to(state=UserNewAppointmentSG.confirm_datetime)
+        if callback.message.chat.id in dialog_manager.middleware_data.get('admin_ids'):
+            await dialog_manager.switch_to(state=UserNewAppointmentSG.write_admin_comment)
         else:
-            await dialog_manager.switch_to(state=UserNewAppointmentSG.error_confirm)
+            session = dialog_manager.middleware_data['session']
+            status = 'confirm'
+            date, text_date, time, text_time = await datetime_format(date=dialog_manager.dialog_data.get('date'),
+                                                                     time=data)
+            result = await user_confirm_datetime(callback.message.chat.id, date, time, status, session)
+            if result:
+                await dialog_manager.switch_to(state=UserNewAppointmentSG.confirm_datetime)
+            else:
+                await dialog_manager.switch_to(state=UserNewAppointmentSG.error_confirm)
 
 
 ################################################################################
@@ -166,3 +170,37 @@ async def user_is_confirm_delete_appointment(callback: CallbackQuery, widget: Se
 
     await user_confirm_datetime(user_id, date, time, status, session)
     await dialog_manager.next(show_mode=ShowMode.EDIT)
+
+
+###### ЗАПИСЬ ОТ ЛИЦА АДМИНА
+
+async def new_appointment_from_admin(callback: CallbackQuery, widget: Select,
+                                     dialog_manager: DialogManager):
+    session = dialog_manager.middleware_data['session']
+    status = 'confirm'
+    date, text_date, time, text_time = await datetime_format(date=dialog_manager.dialog_data.get('date'),
+                                                             time=dialog_manager.dialog_data.get('time'))
+    comment = dialog_manager.dialog_data.get('comment')
+    result = await user_confirm_datetime(callback.message.chat.id, date, time, status, session, comment)
+    if result:
+        await dialog_manager.switch_to(state=UserNewAppointmentSG.confirm_admin_datetime)
+    else:
+        await dialog_manager.switch_to(state=UserNewAppointmentSG.error_confirm)
+
+
+# функция если фильтр выше пройден
+async def confirmed_admin_appointment(
+        message: Message,
+        widget: ManagedTextInput,
+        dialog_manager: DialogManager,
+        text: str) -> None:
+    await dialog_manager.update({'comment': text})
+    await dialog_manager.next(show_mode=ShowMode.EDIT)
+
+
+# обработчик кнопки "назад" из написания админ коммента
+async def back_btn_adm_appointment(
+        message: Message,
+        widget: ManagedTextInput,
+        dialog_manager: DialogManager) -> None:
+    await dialog_manager.switch_to(UserNewAppointmentSG.choose_time)

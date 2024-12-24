@@ -24,7 +24,7 @@ class UserAppointmentSG(StatesGroup):
     delete_appointment_datetime = State()  # окно выбора "слота" для отмены
     delete_appointment_confirm = State()  # окно подтверждения отмены
     delete_appointment_result = State()  # окно с результатом отмены
-    no_one_appointment = State() # окно если у пользователя нет ни одной записи
+    no_one_appointment = State()  # окно если у пользователя нет ни одной записи
 
 
 # Новая запись (пользователь)
@@ -34,4 +34,8 @@ class UserNewAppointmentSG(StatesGroup):
     choose_time = State()  # окно с доступным временем на выбранную дату
     confirm_datetime = State()  # окно с уведомлением об удачной записи на выбранный слот
     error_confirm = State()  # окно с ошибкой записи
-    user_max_appointment = State()  # окно с ошибкой записи
+    user_max_appointment = State()  # окно с ошибкой записи по причине макс. количества записей
+    # стейты для новой записи со стороны админа
+    write_admin_comment = State()  # админ пишет комментарий к слоту
+    admin_confirmed_new_appointment = State()  # подтверждение новой записи с комментарием
+    confirm_admin_datetime = State()  # окно с уведомлением об удачной записи на выбранный слот

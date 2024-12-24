@@ -1,7 +1,7 @@
 import datetime
 import logging
 
-from aiogram_dialog.widgets.kbd import Row, Button
+from aiogram_dialog.widgets.kbd import Button
 from aiogram_dialog.widgets.text import Const
 
 from src.services.database_func import get_free_dates_from_db, user_is_register, get_slot_with_user_id
@@ -10,7 +10,6 @@ logger = logging.getLogger(__name__)
 
 '''
 Разные сервисные функции
-Потом нужно подключить логирование
 '''
 
 
@@ -130,7 +129,7 @@ async def datetime_format(date=None, time=None):
     if date:
         date_for_format = list(map(int, date.split('-')))
         new_date = datetime.date(date_for_format[2], date_for_format[1], date_for_format[0])
-        result(new_date, date)  # noqa
+        result += (new_date, date)  # noqa
     if time:
         new_time = datetime.time(*list(map(int, time.split(':'))))
         text_time = f'{datetime.time.strftime(new_time, '%H:%M')}'

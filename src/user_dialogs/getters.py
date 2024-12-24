@@ -41,7 +41,9 @@ async def get_user_appointments(dialog_manager: DialogManager, event_from_user: 
     time = dialog_manager.dialog_data.get('time')
     datetime_for_user = dialog_manager.dialog_data.get('datetime_for_user')
 
-    return {'user_appointment': user_appointment, 'datetime_for_user': datetime_for_user, 'date': date, 'time': time}
+    is_admin = event_from_user.id in dialog_manager.middleware_data['admin_ids']
+    return {'user_appointment': user_appointment, 'datetime_for_user': datetime_for_user, 'date': date, 'time': time,
+            'is_admin': is_admin}
 
 
 # Геттер для отображения пользователю календаря на первый месяц
@@ -96,4 +98,5 @@ async def get_free_times_from_date(dialog_manager: DialogManager, **kwargs) -> d
 async def get_confirm_datetime(dialog_manager: DialogManager, **kwargs) -> dict:
     date = dialog_manager.dialog_data.get('date')
     time = dialog_manager.dialog_data.get('time')
-    return {'time': time, 'date': date}
+    comment = dialog_manager.dialog_data.get('comment')
+    return {'time': time, 'date': date, 'comment': comment}

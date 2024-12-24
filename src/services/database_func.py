@@ -10,7 +10,6 @@ logger = logging.getLogger(__name__)
 '''
 Функции для работы с базой данных
 через алхимию
-Потом подключить логирование
 '''
 
 
@@ -40,7 +39,6 @@ async def add_new_user(session: AsyncSession, user_id, username, phone):
                                       )
     await session.execute(stmt)
     await session.commit()
-
 
 
 # Получение пользователя из базы по его telegram_id
@@ -74,7 +72,7 @@ async def get_free_time_on_date_from_db(date, session: AsyncSession):
 
 
 # Изменение статуса слота со стороны пользователя (запись или отмена)
-async def user_confirm_datetime(user_id, date, time, status, session: AsyncSession):
+async def user_confirm_datetime(user_id, date, time, status, session: AsyncSession, comment=None):
     stmt = select(Slots).where(and_(Slots.date == date, Slots.time == time))
     result = await session.execute(stmt)
     slot = result.scalar()
@@ -83,10 +81,13 @@ async def user_confirm_datetime(user_id, date, time, status, session: AsyncSessi
             if slot.user_id != 0:
                 return False
             slot.user_id = user_id
+            if comment:
+                slot.comment = comment
             await session.commit()
             return True
         case 'delete':
             slot.user_id = 0
+            slot.comment = comment
             await session.commit()
             return True
         case _:
