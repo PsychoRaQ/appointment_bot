@@ -30,6 +30,8 @@ async def main() -> None:
     config = load_config('.env')
     bot_token = config.token  # токен бота
     admin_ids = config.admin_id  # id телеграмм-аккаунта админа
+    description = config.description  # описание бота / текст кнопки "помощь"
+    admin_url = config.admin_url  # ссылка на тг админа для обратной связи
 
     database_config = load_database()  # загрузка конфигурации базы данных
 
@@ -49,7 +51,7 @@ async def main() -> None:
         dp.workflow_data.update({'registered_users': registered_users, })
 
     # передача переменных из конфига в диспетчер
-    dp.workflow_data.update({'admin_ids': admin_ids, })
+    dp.workflow_data.update({'admin_ids': admin_ids, 'description': description, 'admin_url': admin_url, })
 
     # подключаем мидлвари
     dp.update.outer_middleware(DbSessionMiddleware(Sessionmaker))
@@ -69,6 +71,7 @@ async def main() -> None:
     dp.include_router(user_dg.start_dialog)
     dp.include_router(user_dg.user_appointment_dialog)
     dp.include_router(user_dg.user_new_appointment_dialog)
+    dp.include_router(user_dg.help_description_dialog)
 
     # Подключаем диалоги
     setup_dialogs(dp)

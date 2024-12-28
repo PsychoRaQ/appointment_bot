@@ -18,6 +18,11 @@ class MainMenuSG(StatesGroup):
     main_menu = State()  # окно с главным меню бота
 
 
+# Помощь
+class HelpSG(StatesGroup):
+    help_menu = State()  # окно с текстом "помощь"
+
+
 # "Мои записи"
 class UserAppointmentSG(StatesGroup):
     main = State()  # окно "мои записи" - отображает пользователю его записи (если есть)

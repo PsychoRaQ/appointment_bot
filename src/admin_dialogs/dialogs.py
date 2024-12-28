@@ -2,17 +2,23 @@ from aiogram import F
 from aiogram_dialog import Dialog, Window
 from aiogram_dialog.widgets.kbd import Button, Row, Back, Next, Select, Group, Cancel, SwitchTo
 from aiogram_dialog.widgets.text import Const, Format, List
-
+# импорт состояний
+from src.fsm.admin_states import AdminMenuSG, AdminEditCalendary, AllAppointments
+# импорт сервисных функций-билдеров
+from src.services.widget_builder_for_dialogs import get_weekday_button, get_group
+# импорт всех геттеров
 from src.admin_dialogs.getters import (get_admin_menu, get_free_dates_on_next_month, get_free_dates_on_current_month,
                                        get_free_times_from_date, slot_info_for_user, get_all_slots)
+# хэндлеры для редактирования расписания
 from src.admin_dialogs.handlers import admin_choose_date_for_edit, admin_choose_time_slot_for_edit, admin_close_slot
+# хэндлеры для селектора (главное меню)
 from src.admin_dialogs.handlers import admin_dialog_selection
+# хэндлер для отображения всех записей
 from src.admin_dialogs.handlers import admin_choose_date_for_look
-from src.fsm.admin_states import AdminMenuSG, AdminEditCalendary, AllAppointments
-from src.services.service_for_dialogs import get_weekday_button, get_group
 
 '''
 Все диалоги бота для администратора
+(для функции ручной записи и удаления ручной записи используются пользовательские диалоги)
 '''
 
 # Главное меню

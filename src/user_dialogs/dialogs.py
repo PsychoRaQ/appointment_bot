@@ -4,27 +4,26 @@ from aiogram_dialog.widgets.input import TextInput
 from aiogram_dialog.widgets.kbd import Button, Row, Back, Next, Select, Group, Cancel, SwitchTo
 from aiogram_dialog.widgets.text import Const, Format, List
 
-# все геттеры прописаны в одном месте
+# все состояния прописаны в одном месте
+from src.fsm.user_states import (MainMenuSG, StartSG, UserAppointmentSG, UserNewAppointmentSG, HelpSG)
+from src.services.widget_builder_for_dialogs import get_weekday_button, get_group
+# импорт всех геттеров
 from src.user_dialogs.getters import (get_userdata, get_main_menu, get_user_appointments,
                                       get_free_dates_on_current_month,
-                                      get_free_dates_on_next_month, get_free_times_from_date, get_confirm_datetime)
-# все состояния прописаны в одном месте
-from src.fsm.user_states import (MainMenuSG, StartSG, UserAppointmentSG, UserNewAppointmentSG)
-
+                                      get_free_dates_on_next_month, get_free_times_from_date, get_confirm_datetime,
+                                      get_help_menu)
 # хэндлеры для диалога регистрации
 from src.user_dialogs.handlers import (check_username, confirm_registration, correct_input, error_input, check_phone,
                                        cancel_registration, go_next)
+# хэндлеры для записи от лица администратора (с комментарием)
+from src.user_dialogs.handlers import (confirmed_admin_appointment, new_appointment_from_admin,
+                                       back_btn_adm_appointment)
+# хэндлеры для диалога удаления записей
+from src.user_dialogs.handlers import (user_delete_appointment, user_is_confirm_delete_appointment)
 # хэндлеры для диалога-селектора в главном меню
 from src.user_dialogs.handlers import (user_dialog_selection)
 # хэндлеры для диалога записи пользователя
 from src.user_dialogs.handlers import (user_new_date_appointment, user_new_time_appointment)
-# хэндлеры для диалога удаления записей
-from src.user_dialogs.handlers import (user_delete_appointment, user_is_confirm_delete_appointment)
-# хэндлеры для записи от лица администратора (с комментарием)
-from src.user_dialogs.handlers import (confirmed_admin_appointment, new_appointment_from_admin,
-                                       back_btn_adm_appointment)
-
-from src.services.service_for_dialogs import get_weekday_button, get_group
 
 '''
 Все диалоги бота для пользователей
@@ -97,6 +96,17 @@ main_menu_dialog = Dialog(
     ),
 )
 
+# описание бота / раздел помощи
+help_description_dialog = Dialog(
+    Window(
+        Format(text='{help}'),
+        Cancel(Const(text='◀️ Назад'),
+               id='cancel_button'),
+        state=HelpSG.help_menu,
+        getter=get_help_menu
+    ),
+)
+
 # пользователь выбрал "Мои записи" (+ отмена записей)
 user_appointment_dialog = Dialog(
     Window(
@@ -128,14 +138,14 @@ user_appointment_dialog = Dialog(
         state=UserAppointmentSG.delete_appointment_datetime,
     ),
     Window(
-        Format(text='Вы точно хотите отменить свою запись на {datetime_for_user}:'),
+        Format(text='Вы точно хотите отменить свою запись на {text_date} - {text_time}:'),
         Button(text=Const('Подтвердить отмену'), id='del_conf_bnt', on_click=user_is_confirm_delete_appointment),
         Back(Const(text='◀️ Назад'),
              id='back_button'),
         state=UserAppointmentSG.delete_appointment_confirm,
     ),
     Window(
-        Format(text='Ваша запись на {datetime_for_user} была отменена.'),
+        Format(text='Ваша запись на {text_date} - {text_time} была отменена.'),
         Cancel(Const(text='В главное меню'),
                id='back_button'),
         state=UserAppointmentSG.delete_appointment_result,

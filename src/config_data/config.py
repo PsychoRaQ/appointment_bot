@@ -14,6 +14,8 @@ class DatabaseConfig:
 class TgBot:
     token: str  # Токен для доступа к телеграм-боту
     admin_id: list  # Список id администраторов бота
+    description: str | list  # описание бота/помощь
+    admin_url: str # ссылка на тг админа для обратной связи
 
 
 # Создаем конфиг из переменных указанных в env по пути path
@@ -24,6 +26,8 @@ def load_config(path: str | None = None) -> TgBot:
     return TgBot(
         token=env('BOT_TOKEN'),
         admin_id=[int(i) for i in env.list('ADMIN_IDS') if i != ''],
+        description=env('HELP_COMMAND_DESCRIPTION'),
+        admin_url = env('ADMIN_TG_URL'),
     )
 
 

@@ -1,6 +1,10 @@
 from aiogram_dialog.widgets.kbd import Group, Select, Button
 from aiogram_dialog.widgets.text import Format, Const
 
+'''
+Функции-билдеры для построения виджетов
+'''
+
 
 # Возвращает список с кнопками для отображения дней недели в календарях
 def get_weekday_button():
@@ -14,7 +18,7 @@ def get_weekday_button():
 
 
 # Возвращает Group для отображения календаря / слотов
-def get_group(on_click, datetime, selector=None):
+def get_group(on_click, datetime):
     if datetime == 'date':
         id = 'date'
         getter = lambda x: x[1]

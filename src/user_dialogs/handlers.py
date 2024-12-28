@@ -1,12 +1,10 @@
-import datetime
-
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import Message, CallbackQuery, message
 from aiogram_dialog import DialogManager, ShowMode
 from aiogram_dialog.widgets.input import ManagedTextInput
 from aiogram_dialog.widgets.kbd import Button, Select
 
-from src.fsm.user_states import (StartSG, MainMenuSG, UserAppointmentSG, UserNewAppointmentSG)
-from src.services.database_func import add_new_user, user_confirm_datetime, get_slot_with_user_id
+from src.fsm.user_states import (StartSG, MainMenuSG, UserAppointmentSG, UserNewAppointmentSG, HelpSG)
+from src.services.database_func import add_new_user, user_confirm_datetime, get_slot_with_user_id, user_is_register
 from src.services.service_func import (return_user_is_max_appointment, refactor_phone_number, datetime_format)
 
 '''
@@ -106,17 +104,19 @@ async def user_dialog_selection(callback: CallbackQuery, widget: Select,
             else:
                 await dialog_manager.start(state=UserAppointmentSG.main)
         case 'help':
-            print(data)
+            await dialog_manager.start(state=HelpSG.help_menu)
         case 'feedback':
-            print(data)
+            admin_url = dialog_manager.middleware_data.get('admin_url')
+            await callback.message.answer(text=f'Для обратной связи напишите сюда: {admin_url}')
         case _:
             print(data)
 
+            ##############################################################################
+            # ВЫБОР ДАТЫ И ВРЕМЕНИ ДЛЯ ЗАПИСИ ПОЛЬЗОВАТЕЛЯ
 
-##############################################################################
-# ВЫБОР ДАТЫ И ВРЕМЕНИ ДЛЯ ЗАПИСИ ПОЛЬЗОВАТЕЛЯ
+            # Пользователь выбрал дату для записи
 
-# Пользователь выбрал дату для записи
+
 async def user_new_date_appointment(callback: CallbackQuery, widget: Select,
                                     dialog_manager: DialogManager, data: str):
     if data != 'locked':
@@ -125,6 +125,7 @@ async def user_new_date_appointment(callback: CallbackQuery, widget: Select,
 
 
 # Пользователь выбрал время для записи
+
 async def user_new_time_appointment(callback: CallbackQuery, widget: Select,
                                     dialog_manager: DialogManager, data: str):
     if data:
@@ -142,37 +143,52 @@ async def user_new_time_appointment(callback: CallbackQuery, widget: Select,
             else:
                 await dialog_manager.switch_to(state=UserNewAppointmentSG.error_confirm)
 
+    ################################################################################
+    # ПОЛЬЗОВАТЕЛЬ ХОЧЕТ ОТМЕНИТЬ ЗАПИСЬ
 
-################################################################################
-# ПОЛЬЗОВАТЕЛЬ ХОЧЕТ ОТМЕНИТЬ ЗАПИСЬ
+    # пользователь выбрал "слот" для отмены
 
-# пользователь выбрал "слот" для отмены
+
 async def user_delete_appointment(callback: CallbackQuery, widget: Select,
                                   dialog_manager: DialogManager, data: str):
     date, time = data.split('-')
-    date = list(map(int, date.split('.')))
-    time = list(map(int, time.split(':')))
-
-    await dialog_manager.update({'date': date, 'time': time, 'datetime_for_user': data})
+    date = date.replace('.', '-')
+    date, text_date, time, text_time = await datetime_format(date, time)
+    await dialog_manager.update(
+        {'text_date': text_date, 'text_time': text_time})
     await dialog_manager.next(show_mode=ShowMode.EDIT)
 
+    # пользователь подтвердил удаление выбранного слота
 
-# пользователь подтвердил удаление выбранного слота
+
 async def user_is_confirm_delete_appointment(callback: CallbackQuery, widget: Select,
                                              dialog_manager: DialogManager):
     user_id = callback.message.chat.id
     session = dialog_manager.middleware_data['session']
 
-    convert_date = dialog_manager.dialog_data.get('date')
-    date = datetime.date(convert_date[2], convert_date[1], convert_date[0])
-    time = datetime.time(*dialog_manager.dialog_data.get('time'))
+    text_date = dialog_manager.dialog_data.get('text_date')
+    text_time = dialog_manager.dialog_data.get('text_time')
+    date, text_date, time, text_time = await datetime_format(text_date, text_time)
+
     status = 'delete'
+
+    user = await user_is_register(session, user_id)
+    bot = dialog_manager.middleware_data['bot']
+    admin_ids = dialog_manager.middleware_data['admin_ids']
+
+    for adm_id in admin_ids:
+        try:
+            await bot.send_message(adm_id,
+                                   f'Пользователь {user.username} отменил свою запись {text_date} - {text_time}\n'
+                                   f'Телефон: {user.phone}')
+        except:
+            continue
 
     await user_confirm_datetime(user_id, date, time, status, session)
     await dialog_manager.next(show_mode=ShowMode.EDIT)
 
+    ###### ЗАПИСЬ ОТ ЛИЦА АДМИНА
 
-###### ЗАПИСЬ ОТ ЛИЦА АДМИНА
 
 async def new_appointment_from_admin(callback: CallbackQuery, widget: Select,
                                      dialog_manager: DialogManager):
@@ -187,8 +203,9 @@ async def new_appointment_from_admin(callback: CallbackQuery, widget: Select,
     else:
         await dialog_manager.switch_to(state=UserNewAppointmentSG.error_confirm)
 
+    # функция если фильтр выше пройден
 
-# функция если фильтр выше пройден
+
 async def confirmed_admin_appointment(
         message: Message,
         widget: ManagedTextInput,
@@ -197,8 +214,9 @@ async def confirmed_admin_appointment(
     await dialog_manager.update({'comment': text})
     await dialog_manager.next(show_mode=ShowMode.EDIT)
 
+    # обработчик кнопки "назад" из написания админ коммента
 
-# обработчик кнопки "назад" из написания админ коммента
+
 async def back_btn_adm_appointment(
         message: Message,
         widget: ManagedTextInput,

@@ -32,18 +32,25 @@ async def get_main_menu(**kwargs) -> dict:
     return {'main_menu': main_menu}
 
 
+# Геттер для окна помощь
+async def get_help_menu(dialog_manager: DialogManager, **kwargs) -> dict:
+    text = dialog_manager.middleware_data['description']
+    return {'help': text}
+
+
 # Геттер для отображения пользователю его записей
 async def get_user_appointments(dialog_manager: DialogManager, event_from_user: User, **kwargs) -> dict:
     user_appointment_list = await get_slot_with_user_id(dialog_manager.middleware_data['session'], event_from_user.id)
     user_appointment = [(datetime.date.strftime(slot.date, '%d.%m.%Y'), datetime.time.strftime(slot.time, '%H:%M')) for
                         slot in user_appointment_list]
+
     date = dialog_manager.dialog_data.get('date')
     time = dialog_manager.dialog_data.get('time')
-    datetime_for_user = dialog_manager.dialog_data.get('datetime_for_user')
+    text_date = dialog_manager.dialog_data.get('text_date')
+    text_time = dialog_manager.dialog_data.get('text_time')
 
     is_admin = event_from_user.id in dialog_manager.middleware_data['admin_ids']
-    return {'user_appointment': user_appointment, 'datetime_for_user': datetime_for_user, 'date': date, 'time': time,
-            'is_admin': is_admin}
+    return {'user_appointment': user_appointment, 'text_date': text_date, 'text_time': text_time, 'is_admin': is_admin}
 
 
 # Геттер для отображения пользователю календаря на первый месяц
