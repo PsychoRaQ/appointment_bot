@@ -2,7 +2,7 @@ from aiogram.types import CallbackQuery
 from aiogram_dialog import DialogManager
 from aiogram_dialog.widgets.kbd import Select
 
-from src.fsm.admin_states import AdminEditCalendary
+from src.fsm.admin_states import AdminEditCalendary, AllAppointments
 from src.services.database_func import (get_slot_from_db, admin_change_slot_data, add_new_time_slot,
                                         get_slot_with_user_id)
 from src.services.service_func import datetime_format
@@ -31,7 +31,7 @@ async def admin_dialog_selection(callback: CallbackQuery, widget: Select,
             else:
                 await dialog_manager.start(state=UserAppointmentSG.delete_appointment_datetime)
         case 'all_appointments':
-            print(data)
+            await dialog_manager.start(state=AllAppointments.first_month)
         case 'dispatch':
             print(data)
         case _:
@@ -46,6 +46,14 @@ async def admin_choose_date_for_edit(callback: CallbackQuery, widget: Select,
     if data != 'locked':
         await dialog_manager.update({'date': data})
         await dialog_manager.switch_to(state=AdminEditCalendary.choose_time)
+
+
+# Админ выбрал дату для отображения слотов
+async def admin_choose_date_for_look(callback: CallbackQuery, widget: Select,
+                                     dialog_manager: DialogManager, data: str):
+    if data != 'locked':
+        await dialog_manager.update({'date': data})
+        await dialog_manager.switch_to(state=AllAppointments.appointments_list)
 
 
 # Админ выбрал время слота

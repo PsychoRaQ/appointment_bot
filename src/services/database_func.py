@@ -1,8 +1,7 @@
 from src.db.models import Users, Slots
 from sqlalchemy import select, and_
 from sqlalchemy.dialects.postgresql import insert as upsert
-from sqlalchemy.ext.asyncio import AsyncSession, AsyncEngine
-
+from sqlalchemy.ext.asyncio import AsyncSession
 import logging
 
 logger = logging.getLogger(__name__)

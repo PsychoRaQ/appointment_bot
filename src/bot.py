@@ -1,19 +1,19 @@
 import asyncio
-import sys
 import logging
-from aiogram import Dispatcher, Bot
-from aiogram_dialog import setup_dialogs
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
-from sqlalchemy import text, select
-from aiogram.fsm.storage.redis import DefaultKeyBuilder, Redis, RedisStorage
+import sys
 
-from src.db.models import Users
-from user_dialogs import dialogs as user_dg
+from aiogram import Dispatcher, Bot
+from aiogram.fsm.storage.redis import DefaultKeyBuilder, Redis, RedisStorage
+from aiogram_dialog import setup_dialogs
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
+
 from admin_dialogs import dialogs as admin_dg
 from config_data.config import load_config, load_database
-from middlewares.session import DbSessionMiddleware
 from handlers import (user_handlers, unregister_handlers, admin_handlers)
+from middlewares.session import DbSessionMiddleware
 from src.services.database_func import get_all_users_from_db
+from user_dialogs import dialogs as user_dg
 
 
 async def main() -> None:
@@ -62,6 +62,7 @@ async def main() -> None:
     # Подключаем роутеры для диалогов админки
     dp.include_router(admin_dg.main_menu_dialog)
     dp.include_router(admin_dg.edit_calendary)
+    dp.include_router(admin_dg.all_appointments)
 
     # Подключаем роутеры для диалогов пользователей
     dp.include_router(user_dg.main_menu_dialog)

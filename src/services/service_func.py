@@ -1,9 +1,6 @@
 import datetime
 import logging
 
-from aiogram_dialog.widgets.kbd import Button
-from aiogram_dialog.widgets.text import Const
-
 from src.services.database_func import get_free_dates_from_db, user_is_register, get_slot_with_user_id
 
 logger = logging.getLogger(__name__)
@@ -112,17 +109,6 @@ async def create_time_slots(start, stop):
 
 ##### Общее
 
-# Возвращает список с кнопками для отображения дней недели в календарях
-def get_weekday_button():
-    return [Button(Const(text='Пн'), id=''),
-            Button(Const(text='Вт'), id=''),
-            Button(Const(text='Ср'), id=''),
-            Button(Const(text='Чт'), id=''),
-            Button(Const(text='Пт'), id=''),
-            Button(Const(text='Сб'), id=''),
-            Button(Const(text='Вс'), id=''), ]
-
-
 # Форматирует дату и время во все нужные виды
 async def datetime_format(date=None, time=None):
     result = ()
@@ -131,7 +117,10 @@ async def datetime_format(date=None, time=None):
         new_date = datetime.date(date_for_format[2], date_for_format[1], date_for_format[0])
         result += (new_date, date)  # noqa
     if time:
-        new_time = datetime.time(*list(map(int, time.split(':'))))
+        time = time.split(':')
+        if not time[1].isdigit():
+            time[1] = time[1].split(' ')[0]
+        new_time = datetime.time(*list(map(int, time)))
         text_time = f'{datetime.time.strftime(new_time, '%H:%M')}'
         result += (new_time, text_time)
     return result

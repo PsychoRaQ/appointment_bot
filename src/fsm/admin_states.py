@@ -18,12 +18,8 @@ class AdminEditCalendary(StatesGroup):
     user_on_date = State()
 
 
-# Добавление записи нового пользователя
-class AdminAddNewUserAppointment(StatesGroup):
+# Просмотр всех записей
+class AllAppointments(StatesGroup):
     first_month = State()
     second_month = State()
-    choose_time = State()
-    write_username = State()
-    write_number = State()
-    confirmed = State()
-    error_appointment = State()
+    appointments_list = State()

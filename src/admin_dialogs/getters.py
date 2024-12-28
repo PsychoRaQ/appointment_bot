@@ -1,8 +1,8 @@
 import datetime
 
 from aiogram.types import User
-from sqlalchemy.ext.asyncio import AsyncSession
 from aiogram_dialog import DialogManager
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.services.database_func import get_slots_list_from_db, get_slot_from_db, user_is_register
 from src.services.service_func import create_admin_date_list, create_time_slots, datetime_format
@@ -24,7 +24,7 @@ async def get_admin_menu(**kwargs) -> dict:
     return {'main_menu': main_menu}
 
 
-# Геттер для отображения пользователю календаря на первый месяц
+# Геттер для отображения админу календаря на первый месяц
 async def get_free_dates_on_current_month(session: AsyncSession, **kwargs) -> dict:
     MONTH_LIST = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь',
                   'Ноябрь',
@@ -40,11 +40,12 @@ async def get_free_dates_on_current_month(session: AsyncSession, **kwargs) -> di
             current_month_dates.insert(0, (' ', 'locked'))
     for _ in range(42 - len(current_month_dates)):
         current_month_dates.append((' ', 'locked'))
+
     return {'current_month_dates': current_month_dates, 'current_month': MONTH_LIST[current_month - 1],
             'next_month': MONTH_LIST[next_month - 1], 'current_month_int': current_month}
 
 
-# Геттер для отображения пользователю календаря на следующий месяц
+# Геттер для отображения админу календаря на следующий месяц
 async def get_free_dates_on_next_month(session: AsyncSession, **kwargs) -> dict:
     MONTH_LIST = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь',
                   'Ноябрь',
@@ -114,3 +115,26 @@ async def slot_info_for_user(dialog_manager: DialogManager, event_from_user: Use
 
     return {'date': date, 'time': time, 'text_date': text_date, 'text_time': text_time, 'username': username,
             'phone': user_phone, 'comment': comment, 'is_admin': is_admin}
+
+
+# Геттер для отображения всех открытых слотов (занятых и свободных)
+async def get_all_slots(dialog_manager: DialogManager, **kwargs):
+    text_date = dialog_manager.dialog_data.get('date')
+    session = dialog_manager.middleware_data['session']
+    date, text_date = await datetime_format(date=text_date)
+    result = []
+    slots = await get_slots_list_from_db(date, session)
+    admin_ids = dialog_manager.middleware_data.get('admin_ids')
+    if slots:
+        for slot in slots:
+            time = f'{datetime.time.strftime(slot.time, '%H:%M')}'
+            if slot.user_id == 0:
+                result.append(f'{time} - Свободно')
+            elif slot.user_id in admin_ids:
+                result.append(f'{time} - Занят администратором')
+            else:
+                user = await user_is_register(session, slot.user_id)
+                result.append(f'{time} - {user.username} - {user.phone}')
+    if result == []:
+        result.append('Нет доступных слотов для отображения.')
+    return {'date': text_date, 'slot': result}

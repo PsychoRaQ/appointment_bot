@@ -1,14 +1,15 @@
 from aiogram import F
 from aiogram_dialog import Dialog, Window
 from aiogram_dialog.widgets.kbd import Button, Row, Back, Next, Select, Group, Cancel, SwitchTo
-from aiogram_dialog.widgets.text import Const, Format
+from aiogram_dialog.widgets.text import Const, Format, List
 
 from src.admin_dialogs.getters import (get_admin_menu, get_free_dates_on_next_month, get_free_dates_on_current_month,
-                                       get_free_times_from_date, slot_info_for_user)
+                                       get_free_times_from_date, slot_info_for_user, get_all_slots)
 from src.admin_dialogs.handlers import admin_choose_date_for_edit, admin_choose_time_slot_for_edit, admin_close_slot
 from src.admin_dialogs.handlers import admin_dialog_selection
-from src.fsm.admin_states import AdminMenuSG, AdminEditCalendary
-from src.services.service_func import get_weekday_button
+from src.admin_dialogs.handlers import admin_choose_date_for_look
+from src.fsm.admin_states import AdminMenuSG, AdminEditCalendary, AllAppointments
+from src.services.service_for_dialogs import get_weekday_button, get_group
 
 '''
 Все диалоги бота для администратора
@@ -40,16 +41,7 @@ edit_calendary = Dialog(
         Button(Format(text='{current_month}'),
                id='month', ),
         Row(*get_weekday_button()),
-        Group(
-            Select(
-                Format('{item[0]}'),
-                id='date',
-                item_id_getter=lambda x: x[1],
-                items='current_month_dates',
-                on_click=admin_choose_date_for_edit,
-            ),
-            width=7
-        ),
+        get_group(admin_choose_date_for_edit, 'date'),  # group, основная часть календаря
         Next(Format(text='▶️▶️▶️   {next_month}   ▶️▶️▶️'),
              id='next_month_button'),
         Cancel(Const(text='В главное меню'),
@@ -62,16 +54,7 @@ edit_calendary = Dialog(
         Button(Format(text='{current_month}'),
                id='month', ),
         Row(*get_weekday_button()),
-        Group(
-            Select(
-                Format('{item[0]}'),
-                id='date',
-                item_id_getter=lambda x: x[1],
-                items='current_month_dates',
-                on_click=admin_choose_date_for_edit,
-            ),
-            width=7
-        ),
+        get_group(admin_choose_date_for_edit, 'date'),  # group, основная часть календаря
         Back(Format(text='◀️◀️◀️   {prev_month}   ◀️◀️◀️'),
              id='prev_month_button'),
         Cancel(Const(text='В главное меню'),
@@ -81,16 +64,7 @@ edit_calendary = Dialog(
     ),
     Window(
         Format(text='Изменение временных слотов на {text_date}:'),
-        Group(
-            Select(
-                Format('{item[0]}'),
-                id='time',
-                item_id_getter=lambda x: x[1],
-                items='open_time',
-                on_click=admin_choose_time_slot_for_edit,
-            ),
-            width=4
-        ),
+        get_group(admin_choose_time_slot_for_edit, 'time'),  # group, отображение слотов
         SwitchTo(Const(text='◀️ Назад'), id='b_button', state=AdminEditCalendary.first_month),
         Cancel(Const(text='Главное меню'), id='cancel_button'),
         getter=get_free_times_from_date,
@@ -109,5 +83,42 @@ edit_calendary = Dialog(
         SwitchTo(Const(text='◀️ Назад'), id='b_button', state=AdminEditCalendary.first_month),
         getter=slot_info_for_user,
         state=AdminEditCalendary.user_on_date,
+    ),
+)
+
+# Просмотр всех доступных слотов
+all_appointments = Dialog(
+    Window(
+        Const(text='Выберите дату для просмотра всех доступных слотов:'),
+        Button(Format(text='{current_month}'),
+               id='month', ),
+        Row(*get_weekday_button()),
+        get_group(admin_choose_date_for_look, 'date'),  # group, основная часть календаря
+        Next(Format(text='▶️▶️▶️   {next_month}   ▶️▶️▶️'),
+             id='next_month_button'),
+        Cancel(Const(text='В главное меню'),
+               id='cancel_button'),
+        getter=get_free_dates_on_current_month,
+        state=AllAppointments.first_month
+    ),
+    Window(
+        Const(text='Выберите дату для просмотра всех доступных слотов:'),
+        Button(Format(text='{current_month}'),
+               id='month', ),
+        Row(*get_weekday_button()),
+        get_group(admin_choose_date_for_look, 'date'),  # group, основная часть календаря
+        Back(Format(text='◀️◀️◀️   {prev_month}   ◀️◀️◀️')),
+        Cancel(Const(text='В главное меню'),
+               id='cancel_button'),
+        getter=get_free_dates_on_next_month,
+        state=AllAppointments.second_month
+    ),
+    Window(
+        Format(text='Расписание {date}:\n'),
+        List(field=Format('{item}'),
+             items='slot'),
+        SwitchTo(Const(text='◀️ Назад'), id='b_button', state=AllAppointments.first_month),
+        getter=get_all_slots,
+        state=AllAppointments.appointments_list
     ),
 )

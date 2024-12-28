@@ -24,7 +24,7 @@ from src.user_dialogs.handlers import (user_delete_appointment, user_is_confirm_
 from src.user_dialogs.handlers import (confirmed_admin_appointment, new_appointment_from_admin,
                                        back_btn_adm_appointment)
 
-from src.services.service_func import get_weekday_button
+from src.services.service_for_dialogs import get_weekday_button, get_group
 
 '''
 Все диалоги бота для пользователей
@@ -159,19 +159,8 @@ user_new_appointment_dialog = Dialog(
         Const(text='Выберите дату для записи:'),
         Button(Format(text='{current_month}'),
                id='month', ),
-        Row(
-            *get_weekday_button()
-        ),
-        Group(
-            Select(
-                Format('{item[0]}'),
-                id='date',
-                item_id_getter=lambda x: x[1],
-                items='current_month_dates',
-                on_click=user_new_date_appointment,
-            ),
-            width=7
-        ),
+        Row(*get_weekday_button()),  # дни недели
+        get_group(user_new_date_appointment, 'date'),  # group, основная часть календаря
         Next(Format(text='▶️▶️▶️   {next_month}   ▶️▶️▶️'),
              id='next_month_button'),
         Cancel(Const(text='В главное меню'),
@@ -183,17 +172,8 @@ user_new_appointment_dialog = Dialog(
         Const(text='Доступные даты для записи:'),
         Button(Format(text='{current_month}'),
                id='month', ),
-        Row(*get_weekday_button()),
-        Group(
-            Select(
-                Format('{item[0]}'),
-                id='date',
-                item_id_getter=lambda x: x[1],
-                items='current_month_dates',
-                on_click=user_new_date_appointment,
-            ),
-            width=7
-        ),
+        Row(*get_weekday_button()),  # дни недели
+        get_group(user_new_date_appointment, 'date'),  # group, основная часть календаря
         Back(Format(text='◀️◀️◀️   {prev_month}   ◀️◀️◀️'),
              id='prev_month_button'),
         Cancel(Const(text='В главное меню'),
@@ -203,16 +183,7 @@ user_new_appointment_dialog = Dialog(
     ),
     Window(
         Format(text='Доступное время для записи на {date}:'),
-        Group(
-            Select(
-                Format('{item[0]}'),
-                id='time',
-                item_id_getter=lambda x: x[0],
-                items='open_time',
-                on_click=user_new_time_appointment,
-            ),
-            width=4
-        ),
+        get_group(user_new_time_appointment, 'time'),  # group, отображение слотов
         SwitchTo(Const(text='◀️ Назад'), id='b_button', state=UserNewAppointmentSG.calendary_first_month),
 
         getter=get_free_times_from_date,
