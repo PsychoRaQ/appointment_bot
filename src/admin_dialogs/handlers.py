@@ -1,12 +1,15 @@
+# аиограм
 from aiogram.types import CallbackQuery
 from aiogram_dialog import DialogManager
 from aiogram_dialog.widgets.kbd import Select
-
+# состояния
 from src.fsm.admin_states import AdminEditCalendary, AllAppointments
+from src.fsm.user_states import UserNewAppointmentSG, UserAppointmentSG
+# функции для работы с БД
 from src.services.database_func import (get_slot_from_db, admin_change_slot_data, add_new_time_slot,
                                         get_slot_with_user_id)
+# сервисная функция для форматирования даты/времени
 from src.services.service_func import datetime_format
-from src.fsm.user_states import UserNewAppointmentSG, UserAppointmentSG
 
 '''
 Хэндлеры для диалогов и геттеров (админка)
@@ -38,7 +41,7 @@ async def admin_dialog_selection(callback: CallbackQuery, widget: Select,
             print(data)
 
 
-##### Изменение расписания
+##### РАСПИСАНИЕ
 
 # Админ выбрал дату для изменения слотов
 async def admin_choose_date_for_edit(callback: CallbackQuery, widget: Select,

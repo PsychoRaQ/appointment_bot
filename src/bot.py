@@ -1,20 +1,26 @@
+# системное
 import asyncio
 import logging
 import sys
-
+# аиограм и алхихия
 from aiogram import Dispatcher, Bot
 from aiogram.fsm.storage.redis import DefaultKeyBuilder, Redis, RedisStorage
 from aiogram_dialog import setup_dialogs
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
-
+# диалоги для подключения
 from admin_dialogs import dialogs as admin_dg
-from config_data.config import load_config, load_database
-from handlers import (user_handlers, unregister_handlers, admin_handlers)
-from middlewares.session import DbSessionMiddleware
-from src.services.database_func import get_all_users_from_db
-from src.services.service_func import set_main_menu
 from user_dialogs import dialogs as user_dg
+# конфигурация бота
+from config_data.config import load_config, load_database
+# хэндлеры сообщений
+from handlers import user_handlers, unregister_handlers, admin_handlers
+# мидлвари
+from middlewares.session import DbSessionMiddleware
+# функция для внесения всех пользователей из базы в кэш
+from src.services.database_func import get_all_users_from_db
+# меню бота
+from src.services.service_func import set_main_menu
 
 
 async def main() -> None:

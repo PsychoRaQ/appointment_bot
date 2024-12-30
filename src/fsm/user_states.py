@@ -22,6 +22,7 @@ class MainMenuSG(StatesGroup):
 class HelpSG(StatesGroup):
     help_menu = State()  # окно с текстом "помощь"
 
+
 # Помощь
 class FeedbackSG(StatesGroup):
     feedback = State()  # окно обратной связи
@@ -42,8 +43,8 @@ class UserNewAppointmentSG(StatesGroup):
     calendary_second_month = State()  # окно календаря на следующий месяц
     choose_time = State()  # окно с доступным временем на выбранную дату
     confirm_datetime = State()  # окно с уведомлением об удачной записи на выбранный слот
-    error_confirm = State()  # окно с ошибкой записи
-    user_max_appointment = State()  # окно с ошибкой записи по причине макс. количества записей
+    error_confirm = State()  # окно с ошибкой записи в базу (уже занято)
+    user_max_appointment = State()  # окно с ошибкой (максимальное количество записей)
     # стейты для новой записи со стороны админа
     write_admin_comment = State()  # админ пишет комментарий к слоту
     admin_confirmed_new_appointment = State()  # подтверждение новой записи с комментарием

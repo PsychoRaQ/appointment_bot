@@ -1,10 +1,17 @@
+# типизация
 from typing import Callable, Awaitable, Dict, Any
-
+# аиограм и алхимия
 from aiogram import BaseMiddleware
 from aiogram.types import TelegramObject
 from sqlalchemy.ext.asyncio import async_sessionmaker
 
+'''
+Мидлварь создания сессии для работы с базой данных
+Подключается как внешняя мидлварь
+'''
 
+
+# создание сессии
 class DbSessionMiddleware(BaseMiddleware):
     def __init__(self, session_pool: async_sessionmaker):
         super().__init__()

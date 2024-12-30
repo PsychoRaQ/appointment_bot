@@ -1,6 +1,10 @@
 from src.db import Base
 from sqlalchemy import Column, BigInteger, String, Integer, DateTime, func
 
+'''
+Модель таблицы с пользователями
+'''
+
 
 class Users(Base):
     __tablename__ = 'users'

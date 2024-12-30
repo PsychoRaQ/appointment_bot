@@ -1,3 +1,4 @@
+# аиограм
 from aiogram_dialog.widgets.kbd import Group, Select, Button
 from aiogram_dialog.widgets.text import Format, Const
 

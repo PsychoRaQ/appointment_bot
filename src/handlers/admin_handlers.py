@@ -1,10 +1,12 @@
+# аиограм
 from aiogram import Router, F
 from aiogram.filters import CommandStart, MagicData
 from aiogram.types import Message
 from aiogram_dialog import DialogManager, StartMode
-
+# состояния (админ меню)
 from src.fsm.admin_states import AdminMenuSG
 
+# подключаем и настраиваем роутер (id в списке админов)
 router = Router()
 router.message.filter(MagicData(F.event.chat.id.in_(F.admin_ids)))
 

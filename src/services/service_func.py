@@ -1,9 +1,11 @@
-import datetime
-import logging
-
+# типизация
 from aiogram.types import BotCommand
-
+# функции для работы с базой данных
 from src.services.database_func import get_free_dates_from_db, user_is_register, get_slot_with_user_id
+# для работы с datetime
+import datetime
+# логирование
+import logging
 
 logger = logging.getLogger(__name__)
 

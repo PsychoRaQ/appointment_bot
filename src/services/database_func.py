@@ -1,9 +1,13 @@
-from src.db.models import Users, Slots
+# алхимия
 from sqlalchemy import select, and_
 from sqlalchemy.dialects.postgresql import insert as upsert
 from sqlalchemy.ext.asyncio import AsyncSession
+# модели таблиц
+from src.db.models import Users, Slots
+# логирование
 import logging
 
+# подключаем логирование
 logger = logging.getLogger(__name__)
 
 '''

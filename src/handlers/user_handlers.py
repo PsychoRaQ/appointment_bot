@@ -1,11 +1,14 @@
+# аиограм
 from aiogram import Router, F
 from aiogram.filters import CommandStart, MagicData, or_f
 from aiogram.types import Message
 from aiogram_dialog import DialogManager, StartMode
-
+# функция-фильтр для проверки регистрации пользователя
 from src.filters.filters import UserIsRegister
+# состояние (главное меню пользователя)
 from src.fsm.user_states import MainMenuSG
 
+# подключаем и настраиваем роутер (id пользователя в кэше или в базе)
 router = Router()
 router.message.filter(or_f(MagicData(F.event.chat.id.in_(F.registered_users)), UserIsRegister()))
 

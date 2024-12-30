@@ -12,14 +12,14 @@ class AdminMenuSG(StatesGroup):
 
 # Изменение расписания
 class AdminEditCalendary(StatesGroup):
-    first_month = State()
-    second_month = State()
-    choose_time = State()
-    user_on_date = State()
+    first_month = State()  # календарь на текущий месяц
+    second_month = State()  # календарь на следующий месяц
+    choose_time = State()  # после выбора даты
+    user_on_date = State()  # после выбора временного слота (если занят)
 
 
 # Просмотр всех записей
 class AllAppointments(StatesGroup):
-    first_month = State()
-    second_month = State()
-    appointments_list = State()
+    first_month = State()  # календарь на текущий месяц
+    second_month = State()  # календарь на следующий месяц
+    appointments_list = State()  # список открытых слотов на выбранную дату

@@ -1,9 +1,12 @@
-import datetime
+# аиограм и алхимия
 from sqlalchemy.ext.asyncio import AsyncSession
 from aiogram.types import User
 from aiogram_dialog import DialogManager
-
-from src.services.database_func import (get_free_time_on_date_from_db, get_slot_with_user_id)
+# для работы с datetime
+import datetime
+# функции для работы с базой данных
+from src.services.database_func import get_free_time_on_date_from_db, get_slot_with_user_id
+# сервисные функции (список доступных дат, форматирование даты/времени)
 from src.services.service_func import create_date_list, datetime_format
 
 '''

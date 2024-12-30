@@ -1,15 +1,18 @@
+# аиограм
 from aiogram import Router
 from aiogram.filters import CommandStart
 from aiogram.types import Message
 from aiogram_dialog import DialogManager, StartMode
-
+# состояния (меню регистрации)
 from src.fsm.user_states import StartSG
 
+# подключаем роутер
 router = Router()
 
 '''
 Обработка всех message'ей
 для незарегистрированных пользователей
+(незарегистрированный - id пользователя нет в таблице Users)
 '''
 
 

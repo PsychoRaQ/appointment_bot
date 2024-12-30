@@ -1,6 +1,10 @@
 from src.db import Base
 from sqlalchemy import Column, BigInteger, Integer, Date, Time, String
 
+'''
+Модель таблицы для хранения слотов
+'''
+
 
 class Slots(Base):
     __tablename__ = 'slots'

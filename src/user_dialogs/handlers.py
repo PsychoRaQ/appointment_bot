@@ -1,12 +1,15 @@
-from aiogram.types import Message, CallbackQuery, message
+# аиограм
+from aiogram.types import Message, CallbackQuery
 from aiogram_dialog import DialogManager, ShowMode
 from aiogram_dialog.widgets.input import ManagedTextInput
 from aiogram_dialog.widgets.kbd import Button, Select
-
-from src.fsm.user_states import (StartSG, MainMenuSG, UserAppointmentSG, UserNewAppointmentSG, HelpSG, FeedbackSG)
+# состояния
+from src.fsm.user_states import StartSG, MainMenuSG, UserAppointmentSG, UserNewAppointmentSG, HelpSG, FeedbackSG
+# функции для работы с базой данных
 from src.services.database_func import (add_new_user, user_confirm_datetime, get_slot_with_user_id, user_is_register,
                                         get_slot_from_db)
-from src.services.service_func import (return_user_is_max_appointment, refactor_phone_number, datetime_format)
+# сервисные функции
+from src.services.service_func import return_user_is_max_appointment, refactor_phone_number, datetime_format
 
 '''
 Хэндлеры для всех диалогов и геттеров (пользователь)
