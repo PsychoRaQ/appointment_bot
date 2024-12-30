@@ -1,6 +1,8 @@
 import datetime
 import logging
 
+from aiogram.types import BotCommand
+
 from src.services.database_func import get_free_dates_from_db, user_is_register, get_slot_with_user_id
 
 logger = logging.getLogger(__name__)
@@ -124,3 +126,14 @@ async def datetime_format(date=None, time=None):
         text_time = f'{datetime.time.strftime(new_time, '%H:%M')}'
         result += (new_time, text_time)
     return result
+
+
+# Функция для настройки кнопки Menu бота
+async def set_main_menu(bot):
+    main_menu_commands = [
+        BotCommand(
+            command='/start',
+            description='Главное меню',
+        ),
+    ]
+    await bot.set_my_commands(main_menu_commands)

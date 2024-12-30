@@ -22,6 +22,10 @@ class MainMenuSG(StatesGroup):
 class HelpSG(StatesGroup):
     help_menu = State()  # окно с текстом "помощь"
 
+# Помощь
+class FeedbackSG(StatesGroup):
+    feedback = State()  # окно обратной связи
+
 
 # "Мои записи"
 class UserAppointmentSG(StatesGroup):

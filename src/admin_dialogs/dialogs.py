@@ -24,7 +24,7 @@ from src.admin_dialogs.handlers import admin_choose_date_for_look
 # Главное меню
 main_menu_dialog = Dialog(
     Window(
-        Const(text='~~   Панель администрирования  ~~'),
+        Const(text='☰           Админка          ☰'),
         Group(
             Select(
                 Format('{item[0]}'),
@@ -48,9 +48,9 @@ edit_calendary = Dialog(
                id='month', ),
         Row(*get_weekday_button()),
         get_group(admin_choose_date_for_edit, 'date'),  # group, основная часть календаря
-        Next(Format(text='▶️▶️▶️   {next_month}   ▶️▶️▶️'),
+        Next(Format(text='→   {next_month}   →'),
              id='next_month_button'),
-        Cancel(Const(text='В главное меню'),
+        Cancel(Const(text='☰ Главное меню'),
                id='cancel_button'),
         getter=get_free_dates_on_current_month,
         state=AdminEditCalendary.first_month
@@ -61,9 +61,9 @@ edit_calendary = Dialog(
                id='month', ),
         Row(*get_weekday_button()),
         get_group(admin_choose_date_for_edit, 'date'),  # group, основная часть календаря
-        Back(Format(text='◀️◀️◀️   {prev_month}   ◀️◀️◀️'),
+        Back(Format(text='←   {prev_month}   ←'),
              id='prev_month_button'),
-        Cancel(Const(text='В главное меню'),
+        Cancel(Const(text='☰ Главное меню'),
                id='cancel_button'),
         getter=get_free_dates_on_next_month,
         state=AdminEditCalendary.second_month,
@@ -71,8 +71,8 @@ edit_calendary = Dialog(
     Window(
         Format(text='Изменение временных слотов на {text_date}:'),
         get_group(admin_choose_time_slot_for_edit, 'time'),  # group, отображение слотов
-        SwitchTo(Const(text='◀️ Назад'), id='b_button', state=AdminEditCalendary.first_month),
-        Cancel(Const(text='Главное меню'), id='cancel_button'),
+        SwitchTo(Const(text='← Назад'), id='b_button', state=AdminEditCalendary.first_month),
+        Cancel(Const(text='☰ Главное меню'), id='cancel_button'),
         getter=get_free_times_from_date,
         state=AdminEditCalendary.choose_time,
     ),
@@ -86,7 +86,7 @@ edit_calendary = Dialog(
                     'Комментарий администратора: {comment}\n\n'
                     'Если Вы все-таки хотите закрыть слот - нажмите кнопку "Подтвердить".', when=F['is_admin']),
         Button(Const(text='Подтвердить'), id='confirm_button', on_click=admin_close_slot),
-        SwitchTo(Const(text='◀️ Назад'), id='b_button', state=AdminEditCalendary.first_month),
+        SwitchTo(Const(text='← Назад'), id='b_button', state=AdminEditCalendary.first_month),
         getter=slot_info_for_user,
         state=AdminEditCalendary.user_on_date,
     ),
@@ -100,9 +100,9 @@ all_appointments = Dialog(
                id='month', ),
         Row(*get_weekday_button()),
         get_group(admin_choose_date_for_look, 'date'),  # group, основная часть календаря
-        Next(Format(text='▶️▶️▶️   {next_month}   ▶️▶️▶️'),
+        Next(Format(text='→   {next_month}   →'),
              id='next_month_button'),
-        Cancel(Const(text='В главное меню'),
+        Cancel(Const(text='☰ Главное меню'),
                id='cancel_button'),
         getter=get_free_dates_on_current_month,
         state=AllAppointments.first_month
@@ -113,8 +113,8 @@ all_appointments = Dialog(
                id='month', ),
         Row(*get_weekday_button()),
         get_group(admin_choose_date_for_look, 'date'),  # group, основная часть календаря
-        Back(Format(text='◀️◀️◀️   {prev_month}   ◀️◀️◀️')),
-        Cancel(Const(text='В главное меню'),
+        Back(Format(text='←   {prev_month}   ←')),
+        Cancel(Const(text='☰ Главное меню'),
                id='cancel_button'),
         getter=get_free_dates_on_next_month,
         state=AllAppointments.second_month
@@ -123,7 +123,7 @@ all_appointments = Dialog(
         Format(text='Расписание {date}:\n'),
         List(field=Format('{item}'),
              items='slot'),
-        SwitchTo(Const(text='◀️ Назад'), id='b_button', state=AllAppointments.first_month),
+        SwitchTo(Const(text='← Назад'), id='b_button', state=AllAppointments.first_month),
         getter=get_all_slots,
         state=AllAppointments.appointments_list
     ),

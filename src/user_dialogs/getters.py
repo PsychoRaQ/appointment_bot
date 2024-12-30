@@ -38,19 +38,25 @@ async def get_help_menu(dialog_manager: DialogManager, **kwargs) -> dict:
     return {'help': text}
 
 
+# Геттер для окна обратной связи
+async def get_feedback(dialog_manager: DialogManager, **kwargs) -> dict:
+    admin_url = dialog_manager.middleware_data.get('admin_url')
+    return {'url': admin_url}
+
+
 # Геттер для отображения пользователю его записей
 async def get_user_appointments(dialog_manager: DialogManager, event_from_user: User, **kwargs) -> dict:
     user_appointment_list = await get_slot_with_user_id(dialog_manager.middleware_data['session'], event_from_user.id)
     user_appointment = [(datetime.date.strftime(slot.date, '%d.%m.%Y'), datetime.time.strftime(slot.time, '%H:%M')) for
                         slot in user_appointment_list]
 
-    date = dialog_manager.dialog_data.get('date')
-    time = dialog_manager.dialog_data.get('time')
     text_date = dialog_manager.dialog_data.get('text_date')
     text_time = dialog_manager.dialog_data.get('text_time')
+    comment = dialog_manager.dialog_data.get('comment')
 
     is_admin = event_from_user.id in dialog_manager.middleware_data['admin_ids']
-    return {'user_appointment': user_appointment, 'text_date': text_date, 'text_time': text_time, 'is_admin': is_admin}
+    return {'user_appointment': user_appointment, 'text_date': text_date, 'text_time': text_time, 'is_admin': is_admin,
+            'comment': comment}
 
 
 # Геттер для отображения пользователю календаря на первый месяц

@@ -13,6 +13,7 @@ from config_data.config import load_config, load_database
 from handlers import (user_handlers, unregister_handlers, admin_handlers)
 from middlewares.session import DbSessionMiddleware
 from src.services.database_func import get_all_users_from_db
+from src.services.service_func import set_main_menu
 from user_dialogs import dialogs as user_dg
 
 
@@ -72,10 +73,13 @@ async def main() -> None:
     dp.include_router(user_dg.user_appointment_dialog)
     dp.include_router(user_dg.user_new_appointment_dialog)
     dp.include_router(user_dg.help_description_dialog)
+    dp.include_router(user_dg.feedback_dialog)
 
     # Подключаем диалоги
     setup_dialogs(dp)
 
+    # устанавливаем кнопку Меню
+    await set_main_menu(bot)
     # пропускаем накопившиеся апдейты
     await bot.delete_webhook(drop_pending_updates=True)
     # запускаем поллинг

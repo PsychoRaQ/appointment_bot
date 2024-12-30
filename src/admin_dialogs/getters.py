@@ -131,7 +131,8 @@ async def get_all_slots(dialog_manager: DialogManager, **kwargs):
             if slot.user_id == 0:
                 result.append(f'{time} - Свободно')
             elif slot.user_id in admin_ids:
-                result.append(f'{time} - Занят администратором')
+                comment = slot.comment
+                result.append(f'{time} - Ручная запись - {comment}')
             else:
                 user = await user_is_register(session, slot.user_id)
                 result.append(f'{time} - {user.username} - {user.phone}')

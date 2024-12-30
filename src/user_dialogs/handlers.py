@@ -3,8 +3,9 @@ from aiogram_dialog import DialogManager, ShowMode
 from aiogram_dialog.widgets.input import ManagedTextInput
 from aiogram_dialog.widgets.kbd import Button, Select
 
-from src.fsm.user_states import (StartSG, MainMenuSG, UserAppointmentSG, UserNewAppointmentSG, HelpSG)
-from src.services.database_func import add_new_user, user_confirm_datetime, get_slot_with_user_id, user_is_register
+from src.fsm.user_states import (StartSG, MainMenuSG, UserAppointmentSG, UserNewAppointmentSG, HelpSG, FeedbackSG)
+from src.services.database_func import (add_new_user, user_confirm_datetime, get_slot_with_user_id, user_is_register,
+                                        get_slot_from_db)
 from src.services.service_func import (return_user_is_max_appointment, refactor_phone_number, datetime_format)
 
 '''
@@ -106,8 +107,7 @@ async def user_dialog_selection(callback: CallbackQuery, widget: Select,
         case 'help':
             await dialog_manager.start(state=HelpSG.help_menu)
         case 'feedback':
-            admin_url = dialog_manager.middleware_data.get('admin_url')
-            await callback.message.answer(text=f'Для обратной связи напишите сюда: {admin_url}')
+            await dialog_manager.start(state=FeedbackSG.feedback)
         case _:
             print(data)
 
@@ -154,8 +154,11 @@ async def user_delete_appointment(callback: CallbackQuery, widget: Select,
     date, time = data.split('-')
     date = date.replace('.', '-')
     date, text_date, time, text_time = await datetime_format(date, time)
+    session = dialog_manager.middleware_data['session']
+    slot = await get_slot_from_db(date, time, session)
+    comment = slot.comment
     await dialog_manager.update(
-        {'text_date': text_date, 'text_time': text_time})
+        {'text_date': text_date, 'text_time': text_time, 'comment': comment})
     await dialog_manager.next(show_mode=ShowMode.EDIT)
 
     # пользователь подтвердил удаление выбранного слота
@@ -175,14 +178,14 @@ async def user_is_confirm_delete_appointment(callback: CallbackQuery, widget: Se
     user = await user_is_register(session, user_id)
     bot = dialog_manager.middleware_data['bot']
     admin_ids = dialog_manager.middleware_data['admin_ids']
-
-    for adm_id in admin_ids:
-        try:
-            await bot.send_message(adm_id,
-                                   f'Пользователь {user.username} отменил свою запись {text_date} - {text_time}\n'
-                                   f'Телефон: {user.phone}')
-        except:
-            continue
+    if user_id not in admin_ids:
+        for adm_id in admin_ids:
+            try:
+                await bot.send_message(adm_id,
+                                       f'Пользователь {user.username} отменил свою запись {text_date} - {text_time}\n'
+                                       f'Телефон: {user.phone}')
+            except:
+                continue
 
     await user_confirm_datetime(user_id, date, time, status, session)
     await dialog_manager.next(show_mode=ShowMode.EDIT)
