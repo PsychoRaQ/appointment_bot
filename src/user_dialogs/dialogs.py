@@ -174,7 +174,7 @@ user_new_appointment_dialog = Dialog(
                id='month', ),
         Row(*get_weekday_button()),  # дни недели
         get_group(user_new_date_appointment, 'date'),  # group, основная часть календаря
-        Next(Format(text='→   {next_month}   →'),
+        Next(Format(text='{next_month}   →'),
              id='next_month_button'),
         Cancel(Const(text='☰ Главное меню'),
                id='cancel_button'),
@@ -187,7 +187,7 @@ user_new_appointment_dialog = Dialog(
                id='month', ),
         Row(*get_weekday_button()),  # дни недели
         get_group(user_new_date_appointment, 'date'),  # group, основная часть календаря
-        Back(Format(text='←   {prev_month}   ←'),
+        Back(Format(text='←   {prev_month}'),
              id='prev_month_button'),
         Cancel(Const(text='☰ Главное меню'),
                id='cancel_button'),

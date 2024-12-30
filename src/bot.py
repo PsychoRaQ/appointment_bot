@@ -4,12 +4,16 @@ import logging
 import sys
 # аиограм и алхихия
 from aiogram import Dispatcher, Bot
+from aiogram.client.default import DefaultBotProperties
+from aiogram.enums import ParseMode
 from aiogram.fsm.storage.redis import DefaultKeyBuilder, Redis, RedisStorage
 from aiogram_dialog import setup_dialogs
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 # диалоги для подключения
 from admin_dialogs import dialogs as admin_dg
+from src.nats.nats_connect import connect_to_nats
+from src.services.start_consumers import start_delayed_consumer
 from user_dialogs import dialogs as user_dg
 # конфигурация бота
 from config_data.config import load_config, load_database
@@ -21,6 +25,8 @@ from middlewares.session import DbSessionMiddleware
 from src.services.database_func import get_all_users_from_db
 # меню бота
 from src.services.service_func import set_main_menu
+
+from config_data.config import load_nats
 
 
 async def main() -> None:
@@ -47,7 +53,7 @@ async def main() -> None:
     Sessionmaker = async_sessionmaker(engine, expire_on_commit=False)  # noqa
 
     # инициализация бота и диспетчера
-    bot = Bot(token=bot_token)
+    bot = Bot(token=bot_token, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
     dp = Dispatcher(storage=storage, db_engine=engine)
 
     # Проверка соединения с СУБД
@@ -84,12 +90,38 @@ async def main() -> None:
     # Подключаем диалоги
     setup_dialogs(dp)
 
+    nats_cfg = load_nats()
+    nc, js = await connect_to_nats(servers=nats_cfg.nats.servers)
+
     # устанавливаем кнопку Меню
     await set_main_menu(bot)
     # пропускаем накопившиеся апдейты
     await bot.delete_webhook(drop_pending_updates=True)
     # запускаем поллинг
-    await dp.start_polling(bot)
+    # await dp.start_polling(bot)
+
+    try:
+        await asyncio.gather(
+            dp.start_polling(
+                bot,
+                js=js,
+                delay_del_subject=nats_cfg.delayed_consumer.subject,
+            ),
+            start_delayed_consumer(
+                nc=nc,
+                js=js,
+                bot=bot,
+                subject=nats_cfg.delayed_consumer.subject,
+                stream=nats_cfg.delayed_consumer.stream,
+                durable_name=nats_cfg.delayed_consumer.durable_name
+            ),
+        )
+
+    except Exception as e:
+        print(e)
+    finally:
+        await nc.close()
+        print('Connection to NATS closed')
 
 
 if __name__ == '__main__':

@@ -3,6 +3,8 @@ from aiogram.types import Message, CallbackQuery
 from aiogram_dialog import DialogManager, ShowMode
 from aiogram_dialog.widgets.input import ManagedTextInput
 from aiogram_dialog.widgets.kbd import Button, Select
+# системное
+import datetime
 # состояния
 from src.fsm.user_states import StartSG, MainMenuSG, UserAppointmentSG, UserNewAppointmentSG, HelpSG, FeedbackSG
 # функции для работы с базой данных
@@ -10,6 +12,9 @@ from src.services.database_func import (add_new_user, user_confirm_datetime, get
                                         get_slot_from_db)
 # сервисные функции
 from src.services.service_func import return_user_is_max_appointment, refactor_phone_number, datetime_format
+
+# новое
+from src.nats.publisher import send_delay_message_publisher
 
 '''
 Хэндлеры для всех диалогов и геттеров (пользователь)
@@ -141,6 +146,28 @@ async def user_new_time_appointment(callback: CallbackQuery, widget: Select,
             date, text_date, time, text_time = await datetime_format(date=dialog_manager.dialog_data.get('date'),
                                                                      time=data)
             result = await user_confirm_datetime(callback.message.chat.id, date, time, status, session)
+
+            # новое
+
+            timestamp = datetime.datetime.now()
+            time_to_send_notification = datetime.datetime.combine(date, time)
+
+            delay = int((time_to_send_notification - timestamp).total_seconds()) - 3600 * 24
+
+            js = dialog_manager.middleware_data.get('js')
+            subject = dialog_manager.middleware_data.get('delay_del_subject')
+
+            await send_delay_message_publisher(
+                js=js,
+                chat_id=callback.message.chat.id,
+                date=text_date,
+                time=text_time,
+                subject=subject,
+                delay=delay
+            )
+
+            ###
+
             if result:
                 await dialog_manager.switch_to(state=UserNewAppointmentSG.confirm_datetime)
             else:

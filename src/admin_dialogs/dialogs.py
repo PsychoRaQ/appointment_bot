@@ -49,7 +49,7 @@ edit_calendary = Dialog(
                id='month', ),
         Row(*get_weekday_button()),
         get_group(admin_choose_date_for_edit, 'date'),  # group, основная часть календаря
-        Next(Format(text='→   {next_month}   →'),
+        Next(Format(text='{next_month}   →'),
              id='next_month_button'),
         Cancel(Const(text='☰ Главное меню'),
                id='cancel_button'),
@@ -62,7 +62,7 @@ edit_calendary = Dialog(
                id='month', ),
         Row(*get_weekday_button()),
         get_group(admin_choose_date_for_edit, 'date'),  # group, основная часть календаря
-        Back(Format(text='←   {prev_month}   ←'),
+        Back(Format(text='←   {prev_month}'),
              id='prev_month_button'),
         Cancel(Const(text='☰ Главное меню'),
                id='cancel_button'),
@@ -101,7 +101,7 @@ all_appointments = Dialog(
                id='month', ),
         Row(*get_weekday_button()),
         get_group(admin_choose_date_for_look, 'date'),  # group, основная часть календаря
-        Next(Format(text='→   {next_month}   →'),
+        Next(Format(text='{next_month}   →'),
              id='next_month_button'),
         Cancel(Const(text='☰ Главное меню'),
                id='cancel_button'),
@@ -114,7 +114,7 @@ all_appointments = Dialog(
                id='month', ),
         Row(*get_weekday_button()),
         get_group(admin_choose_date_for_look, 'date'),  # group, основная часть календаря
-        Back(Format(text='←   {prev_month}   ←')),
+        Back(Format(text='←   {prev_month}')),
         Cancel(Const(text='☰ Главное меню'),
                id='cancel_button'),
         getter=get_free_dates_on_next_month,
