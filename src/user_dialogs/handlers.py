@@ -12,8 +12,7 @@ from src.services.database_func import (add_new_user, user_confirm_datetime, get
                                         get_slot_from_db)
 # сервисные функции
 from src.services.service_func import return_user_is_max_appointment, refactor_phone_number, datetime_format
-
-# новое
+# импорт паблишера для отпавки отложенного сообщения
 from src.nats.publisher import send_delay_message_publisher
 
 '''
@@ -119,10 +118,11 @@ async def user_dialog_selection(callback: CallbackQuery, widget: Select,
         case _:
             print(data)
 
-            ##############################################################################
-            # ВЫБОР ДАТЫ И ВРЕМЕНИ ДЛЯ ЗАПИСИ ПОЛЬЗОВАТЕЛЯ
 
-            # Пользователь выбрал дату для записи
+##############################################################################
+# ВЫБОР ДАТЫ И ВРЕМЕНИ ДЛЯ ЗАПИСИ ПОЛЬЗОВАТЕЛЯ
+
+# Пользователь выбрал дату для записи
 
 
 async def user_new_date_appointment(callback: CallbackQuery, widget: Select,
@@ -146,9 +146,7 @@ async def user_new_time_appointment(callback: CallbackQuery, widget: Select,
             date, text_date, time, text_time = await datetime_format(date=dialog_manager.dialog_data.get('date'),
                                                                      time=data)
             result = await user_confirm_datetime(callback.message.chat.id, date, time, status, session)
-
-            # новое
-
+            # настройка отложенного уведомления пользователю (за 24ч до записи)
             timestamp = datetime.datetime.now()
             time_to_send_notification = datetime.datetime.combine(date, time)
 
@@ -165,8 +163,6 @@ async def user_new_time_appointment(callback: CallbackQuery, widget: Select,
                 subject=subject,
                 delay=delay
             )
-
-            ###
 
             if result:
                 await dialog_manager.switch_to(state=UserNewAppointmentSG.confirm_datetime)

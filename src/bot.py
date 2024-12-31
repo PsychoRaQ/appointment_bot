@@ -16,7 +16,7 @@ from src.nats.nats_connect import connect_to_nats
 from src.services.start_consumers import start_delayed_consumer
 from user_dialogs import dialogs as user_dg
 # конфигурация бота
-from config_data.config import load_config, load_database
+from config_data.config import load_config, load_database, load_nats
 # хэндлеры сообщений
 from handlers import user_handlers, unregister_handlers, admin_handlers
 # мидлвари
@@ -25,8 +25,6 @@ from middlewares.session import DbSessionMiddleware
 from src.services.database_func import get_all_users_from_db
 # меню бота
 from src.services.service_func import set_main_menu
-
-from config_data.config import load_nats
 
 
 async def main() -> None:
@@ -47,6 +45,10 @@ async def main() -> None:
     admin_url = config.admin_url  # ссылка на тг админа для обратной связи
 
     database_config = load_database()  # загрузка конфигурации базы данных
+
+    # настройка nats
+    nats_cfg = load_nats()
+    nc, js = await connect_to_nats(servers=nats_cfg.nats.servers)
 
     # создаем движок Алхимии с параметрами из конфига
     engine = create_async_engine(url=database_config.dsn, echo=database_config.is_echo)
@@ -90,9 +92,6 @@ async def main() -> None:
     # Подключаем диалоги
     setup_dialogs(dp)
 
-    nats_cfg = load_nats()
-    nc, js = await connect_to_nats(servers=nats_cfg.nats.servers)
-
     # устанавливаем кнопку Меню
     await set_main_menu(bot)
     # пропускаем накопившиеся апдейты
@@ -101,6 +100,7 @@ async def main() -> None:
     # await dp.start_polling(bot)
 
     try:
+        # запуск поллинга и консьюмера отложенных сообщений
         await asyncio.gather(
             dp.start_polling(
                 bot,

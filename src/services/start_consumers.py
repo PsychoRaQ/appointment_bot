@@ -1,12 +1,18 @@
-import logging
-
+# аиограм
 from aiogram import Bot
+# консьюмер
 from src.nats.consumer import DelayedMessageConsumer
-
+# натс
 from nats.aio.client import Client
 from nats.js.client import JetStreamContext
+# логирование
+import logging
 
 logger = logging.getLogger(__name__)
+
+'''
+запуск консьюмера
+'''
 
 
 async def start_delayed_consumer(

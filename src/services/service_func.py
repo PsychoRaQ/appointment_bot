@@ -88,7 +88,7 @@ async def create_admin_date_list(month, session) -> list:
     years = (2024, 2028, 2032, 2036, 2040)
     day = 31 if month in (1, 3, 5, 7, 8, 10, 12) else 30
     year = datetime.datetime.today().year
-    if month == 1:
+    if month == 1 and datetime.datetime.today().month == 12:
         year += 1
     if month == 2 and year in years:
         day = 29
