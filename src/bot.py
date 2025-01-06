@@ -26,6 +26,8 @@ from src.services.database_func import get_all_users_from_db
 # меню бота
 from src.services.service_func import set_main_menu
 
+from src.nats.publisher import send_delay_message_publisher
+
 
 async def main() -> None:
     # настраиваем логгирование
@@ -49,6 +51,7 @@ async def main() -> None:
     # настройка nats
     nats_cfg = load_nats()
     nc, js = await connect_to_nats(servers=nats_cfg.nats.servers)
+    js_storage = await js.create_key_value(bucket='kv_storage')
 
     # создаем движок Алхимии с параметрами из конфига
     engine = create_async_engine(url=database_config.dsn, echo=database_config.is_echo)
@@ -66,7 +69,8 @@ async def main() -> None:
         dp.workflow_data.update({'registered_users': registered_users, })
 
     # передача переменных из конфига в диспетчер
-    dp.workflow_data.update({'admin_ids': admin_ids, 'description': description, 'admin_url': admin_url, })
+    dp.workflow_data.update({'admin_ids': admin_ids, 'description': description, 'admin_url': admin_url,
+                             'js': js, 'delay_del_subject': nats_cfg.delayed_consumer.subject, 'storage': js_storage, })
 
     # подключаем мидлвари
     dp.update.outer_middleware(DbSessionMiddleware(Sessionmaker))
@@ -98,22 +102,27 @@ async def main() -> None:
     await bot.delete_webhook(drop_pending_updates=True)
     # запускаем поллинг
     # await dp.start_polling(bot)
+    #
+    # await send_delay_message_publisher(
+    #     js=dp.workflow_data.get('js'),
+    #     subject=dp.workflow_data.get('delay_del_subject'),
+    #     delay=1,
+    #     cmd='123')
 
     try:
         # запуск поллинга и консьюмера отложенных сообщений
         await asyncio.gather(
-            dp.start_polling(
-                bot,
-                js=js,
-                delay_del_subject=nats_cfg.delayed_consumer.subject,
-            ),
+            dp.start_polling(bot),
             start_delayed_consumer(
                 nc=nc,
                 js=js,
                 bot=bot,
                 subject=nats_cfg.delayed_consumer.subject,
                 stream=nats_cfg.delayed_consumer.stream,
-                durable_name=nats_cfg.delayed_consumer.durable_name
+                durable_name=nats_cfg.delayed_consumer.durable_name,
+
+                subject_2='$KV.kv_storage.>',
+                stream_2='KV_kv_storage',
             ),
         )
 

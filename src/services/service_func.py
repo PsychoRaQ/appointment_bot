@@ -18,17 +18,23 @@ logger = logging.getLogger(__name__)
 
 # Создание списка с датами на месяц (month)
 # Основная функция, здесь работа с датами и заготовка под конечный результат
-async def create_date_list(month, session) -> list:
+async def create_date_list(month, session, status) -> list:
     years = (2024, 2028, 2032, 2036, 2040)
     day = 31 if month in (1, 3, 5, 7, 8, 10, 12) else 30
     year = datetime.datetime.today().year
-    if month == 1:
+    if month == 1 and datetime.datetime.today().month == 12:
         year += 1
     if month == 2 and year in years:
         day = 29
     elif month == 2 and year not in years:
         day = 28
-    date_lst = [f'{i}' for i in range(1, day + 1)]
+
+    if status == 'current':
+        current_day = datetime.datetime.today().day
+    else:
+        current_day = 1
+
+    date_lst = [f'{i}' for i in range(current_day, day + 1)]
     date_lst = list((map(lambda x: '0' + x if len(x) == 1 else x, date_lst)))
     date_lst = await delete_locked_dates(date_lst, month, year, session, False)
     return date_lst

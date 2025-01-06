@@ -69,8 +69,9 @@ async def get_free_dates_on_current_month(session: AsyncSession, **kwargs) -> di
                   'Декабрь']
     current_month = datetime.date.today().month
     next_month = current_month + 1 if current_month != 12 else current_month - 12 + 1
-    current_month_dates = await create_date_list(current_month, session)
-    first_weekday = datetime.datetime(datetime.datetime.today().year, datetime.datetime.today().month, 1).weekday()
+    current_month_dates = await create_date_list(current_month, session, 'current')
+    first_weekday = datetime.datetime(datetime.datetime.today().year, datetime.datetime.today().month,
+                                      1).weekday() + datetime.datetime.today().day - 1
     if first_weekday:
         for _ in range(first_weekday):
             current_month_dates.insert(0, (' ', 'locked'))
@@ -89,7 +90,7 @@ async def get_free_dates_on_next_month(session: AsyncSession, **kwargs) -> dict:
     month = datetime.date.today().month
     current_month = month + 1 if month != 12 else month - 12 + 1
     year = datetime.date.today().year
-    current_month_dates = await create_date_list(current_month, session)
+    current_month_dates = await create_date_list(current_month, session, 'next')
     current_year = year if current_month != 1 else year + 1
     first_weekday = datetime.datetime(current_year, current_month, 1).weekday()
     if first_weekday:

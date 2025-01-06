@@ -21,7 +21,9 @@ async def start_delayed_consumer(
         bot: Bot,
         subject: str,
         stream: str,
-        durable_name: str
+        durable_name: str,
+        subject_2: str,
+        stream_2: str,
 ) -> None:
     consumer = DelayedMessageConsumer(
         nc=nc,
@@ -29,7 +31,10 @@ async def start_delayed_consumer(
         bot=bot,
         subject=subject,
         stream=stream,
-        durable_name=durable_name
+        durable_name=durable_name,
+
+        subject_2=subject_2,
+        stream_2=stream_2,
     )
     logger.info('Start delayed message consumer')
     await consumer.start()

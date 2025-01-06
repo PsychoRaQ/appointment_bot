@@ -146,22 +146,29 @@ async def user_new_time_appointment(callback: CallbackQuery, widget: Select,
             date, text_date, time, text_time = await datetime_format(date=dialog_manager.dialog_data.get('date'),
                                                                      time=data)
             result = await user_confirm_datetime(callback.message.chat.id, date, time, status, session)
+
             # настройка отложенного уведомления пользователю (за 24ч до записи)
             timestamp = datetime.datetime.now()
             time_to_send_notification = datetime.datetime.combine(date, time)
 
             delay = int((time_to_send_notification - timestamp).total_seconds()) - 3600 * 24
+            delay = 10
 
             js = dialog_manager.middleware_data.get('js')
             subject = dialog_manager.middleware_data.get('delay_del_subject')
 
+            message_id = text_date + text_time
+
+            kv = dialog_manager.middleware_data['storage']
+            await kv.put(f'{message_id}', bytes(str(callback.message.chat.id), encoding='utf-8'))
+
             await send_delay_message_publisher(
                 js=js,
-                chat_id=callback.message.chat.id,
+                subject=subject,
+                delay=delay,
+                message_id=message_id,
                 date=text_date,
                 time=text_time,
-                subject=subject,
-                delay=delay
             )
 
             if result:
@@ -201,6 +208,11 @@ async def user_is_confirm_delete_appointment(callback: CallbackQuery, widget: Se
 
     status = 'delete'
 
+    #######
+    message_id = text_date + text_time
+    kv = dialog_manager.middleware_data['storage']
+    await kv.put(f'{message_id}', b'0')
+    ###########
     user = await user_is_register(session, user_id)
     bot = dialog_manager.middleware_data['bot']
     admin_ids = dialog_manager.middleware_data['admin_ids']
