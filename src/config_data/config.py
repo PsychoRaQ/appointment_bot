@@ -34,6 +34,7 @@ class NatsDelayedConsumerConfig:
 class Nats:
     nats: NatsConfig
     delayed_consumer: NatsDelayedConsumerConfig
+    dispatch_consumer: NatsDelayedConsumerConfig
 
 
 def load_nats(path: str | None = None):
@@ -45,11 +46,17 @@ def load_nats(path: str | None = None):
             subject=env('NATS_DELAYED_CONSUMER_SUBJECT'),
             stream=env('NATS_DELAYED_CONSUMER_STREAM'),
             durable_name=env('NATS_DELAYED_CONSUMER_DURABLE_NAME')
+        ),
+        dispatch_consumer=NatsDelayedConsumerConfig(
+            subject=env('NATS_DISPATCH_CONSUMER_SUBJECT'),
+            stream=env('NATS_DELAYED_CONSUMER_STREAM'),
+            durable_name=env('NATS_DISPATCH_CONSUMER_DURABLE_NAME')
         )
     )
 
+    # Создаем конфиг из переменных указанных в env по пути path
 
-# Создаем конфиг из переменных указанных в env по пути path
+
 def load_config(path: str | None = None) -> TgBot:
     env: Env = Env()
     env.read_env(path)

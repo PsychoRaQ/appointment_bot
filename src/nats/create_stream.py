@@ -17,6 +17,7 @@ async def main():
         name="delayed_messages_aiogram",  # Название стрима
         subjects=[
             "aiogram.delayed.messages",
+            "aiogram.dispatch.messages",
         ],
         retention=RetentionPolicy.WORK_QUEUE,  # Политика удержания
         max_bytes=300 * 1024 * 1024,  # 300 MiB

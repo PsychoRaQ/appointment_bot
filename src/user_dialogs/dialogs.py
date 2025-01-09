@@ -195,7 +195,7 @@ user_new_appointment_dialog = Dialog(
         state=UserNewAppointmentSG.calendary_second_month,
     ),
     Window(
-        Format(text='Доступное время для записи на {date}:'),
+        Format(text='Доступное время для записи на {text_date}:'),
         get_group(user_new_time_appointment, 'time'),  # group, отображение слотов
         SwitchTo(Const(text='← Назад'), id='b_button', state=UserNewAppointmentSG.calendary_first_month),
 

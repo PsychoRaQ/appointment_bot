@@ -13,7 +13,7 @@ from src.services.database_func import (add_new_user, user_confirm_datetime, get
 # сервисные функции
 from src.services.service_func import return_user_is_max_appointment, refactor_phone_number, datetime_format
 # импорт паблишера для отпавки отложенного сообщения
-from src.nats.publisher import send_delay_message_publisher
+from src.nats.publishers import send_delay_message_publisher
 
 '''
 Хэндлеры для всех диалогов и геттеров (пользователь)
@@ -152,7 +152,7 @@ async def user_new_time_appointment(callback: CallbackQuery, widget: Select,
             time_to_send_notification = datetime.datetime.combine(date, time)
 
             delay = int((time_to_send_notification - timestamp).total_seconds()) - 3600 * 24
-            delay = 10
+            delay = 10  # для теста - убрать в проде
 
             js = dialog_manager.middleware_data.get('js')
             subject = dialog_manager.middleware_data.get('delay_del_subject')
@@ -161,7 +161,7 @@ async def user_new_time_appointment(callback: CallbackQuery, widget: Select,
 
             kv = dialog_manager.middleware_data['storage']
             await kv.put(f'{message_id}', bytes(str(callback.message.chat.id), encoding='utf-8'))
-
+            # отправляем сообщение в натс
             await send_delay_message_publisher(
                 js=js,
                 subject=subject,
@@ -207,12 +207,11 @@ async def user_is_confirm_delete_appointment(callback: CallbackQuery, widget: Se
     date, text_date, time, text_time = await datetime_format(text_date, text_time)
 
     status = 'delete'
-
-    #######
+    # отправляем в кв бакет состояние слота (отмена уведомления)
     message_id = text_date + text_time
     kv = dialog_manager.middleware_data['storage']
     await kv.put(f'{message_id}', b'0')
-    ###########
+
     user = await user_is_register(session, user_id)
     bot = dialog_manager.middleware_data['bot']
     admin_ids = dialog_manager.middleware_data['admin_ids']

@@ -23,3 +23,10 @@ class AllAppointments(StatesGroup):
     first_month = State()  # календарь на текущий месяц
     second_month = State()  # календарь на следующий месяц
     appointments_list = State()  # список открытых слотов на выбранную дату
+
+
+# рассылка
+class Dispatch(StatesGroup):
+    edit_dispatch = State()  # ввод текста для рассылки
+    confirm_dispatch = State()  # подтверждение данных рассылки
+    dispatch_is_successfull = State()  # рассылка отправлена

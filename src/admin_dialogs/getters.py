@@ -21,7 +21,7 @@ async def get_admin_menu(**kwargs) -> dict:
         ('Записать пользователя 🖊️', 'add_user_appointment'),
         ('Отменить ручную запись ❌', 'delete_admin_appointment'),
         ('Посмотреть все записи 📑', 'all_appointments'),
-        ('Настройка рассылки ✉️', 'dispatch'),
+        ('Запустить рассылку ✉️', 'dispatch'),
     ]
     return {'main_menu': main_menu}
 
@@ -141,3 +141,9 @@ async def get_all_slots(dialog_manager: DialogManager, **kwargs):
     if result == []:
         result.append('Нет доступных слотов для отображения.')
     return {'date': text_date, 'slot': result}
+
+
+# Геттер для отображения рассылки
+async def get_dispatch_text(dialog_manager: DialogManager, **kwargs) -> dict:
+    text = dialog_manager.dialog_data.get('text')
+    return {'text': text}

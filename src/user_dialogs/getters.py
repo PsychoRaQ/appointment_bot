@@ -117,3 +117,4 @@ async def get_confirm_datetime(dialog_manager: DialogManager, **kwargs) -> dict:
     time = dialog_manager.dialog_data.get('time')
     comment = dialog_manager.dialog_data.get('comment')
     return {'time': time, 'date': date, 'comment': comment}
+

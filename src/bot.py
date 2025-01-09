@@ -13,7 +13,7 @@ from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 # диалоги для подключения
 from admin_dialogs import dialogs as admin_dg
 from src.nats.nats_connect import connect_to_nats
-from src.services.start_consumers import start_delayed_consumer
+from src.services.start_consumers import start_delayed_consumer, start_dispatch_consumer
 from user_dialogs import dialogs as user_dg
 # конфигурация бота
 from config_data.config import load_config, load_database, load_nats
@@ -25,8 +25,6 @@ from middlewares.session import DbSessionMiddleware
 from src.services.database_func import get_all_users_from_db
 # меню бота
 from src.services.service_func import set_main_menu
-
-from src.nats.publisher import send_delay_message_publisher
 
 
 async def main() -> None:
@@ -70,7 +68,8 @@ async def main() -> None:
 
     # передача переменных из конфига в диспетчер
     dp.workflow_data.update({'admin_ids': admin_ids, 'description': description, 'admin_url': admin_url,
-                             'js': js, 'delay_del_subject': nats_cfg.delayed_consumer.subject, 'storage': js_storage, })
+                             'js': js, 'delay_del_subject': nats_cfg.delayed_consumer.subject,
+                             'dispatch_subject': nats_cfg.dispatch_consumer.subject, 'storage': js_storage})
 
     # подключаем мидлвари
     dp.update.outer_middleware(DbSessionMiddleware(Sessionmaker))
@@ -84,6 +83,7 @@ async def main() -> None:
     dp.include_router(admin_dg.main_menu_dialog)
     dp.include_router(admin_dg.edit_calendary)
     dp.include_router(admin_dg.all_appointments)
+    dp.include_router(admin_dg.dispatch_dialog)
 
     # Подключаем роутеры для диалогов пользователей
     dp.include_router(user_dg.main_menu_dialog)
@@ -100,15 +100,6 @@ async def main() -> None:
     await set_main_menu(bot)
     # пропускаем накопившиеся апдейты
     await bot.delete_webhook(drop_pending_updates=True)
-    # запускаем поллинг
-    # await dp.start_polling(bot)
-    #
-    # await send_delay_message_publisher(
-    #     js=dp.workflow_data.get('js'),
-    #     subject=dp.workflow_data.get('delay_del_subject'),
-    #     delay=1,
-    #     cmd='123')
-
     try:
         # запуск поллинга и консьюмера отложенных сообщений
         await asyncio.gather(
@@ -120,10 +111,15 @@ async def main() -> None:
                 subject=nats_cfg.delayed_consumer.subject,
                 stream=nats_cfg.delayed_consumer.stream,
                 durable_name=nats_cfg.delayed_consumer.durable_name,
-
-                subject_2='$KV.kv_storage.>',
-                stream_2='KV_kv_storage',
             ),
+            start_dispatch_consumer(
+                nc=nc,
+                js=js,
+                bot=bot,
+                subject=nats_cfg.dispatch_consumer.subject,
+                stream=nats_cfg.delayed_consumer.stream,
+                durable_name=nats_cfg.dispatch_consumer.durable_name,
+            )
         )
 
     except Exception as e:

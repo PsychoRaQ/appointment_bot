@@ -1,15 +1,18 @@
 # аиограм
-from aiogram.types import CallbackQuery
-from aiogram_dialog import DialogManager
+from aiogram.types import CallbackQuery, Message
+from aiogram_dialog import DialogManager, ShowMode
+from aiogram_dialog.widgets.input import ManagedTextInput
 from aiogram_dialog.widgets.kbd import Select
 # состояния
-from src.fsm.admin_states import AdminEditCalendary, AllAppointments
+from src.fsm.admin_states import AdminEditCalendary, AllAppointments, Dispatch
 from src.fsm.user_states import UserNewAppointmentSG, UserAppointmentSG
 # функции для работы с БД
 from src.services.database_func import (get_slot_from_db, admin_change_slot_data, add_new_time_slot,
-                                        get_slot_with_user_id)
+                                        get_slot_with_user_id, get_all_users_from_db)
 # сервисная функция для форматирования даты/времени
 from src.services.service_func import datetime_format
+# для рассылки
+from src.nats.publishers import send_dispatch
 
 '''
 Хэндлеры для диалогов и геттеров (админка)
@@ -36,7 +39,7 @@ async def admin_dialog_selection(callback: CallbackQuery, widget: Select,
         case 'all_appointments':
             await dialog_manager.start(state=AllAppointments.first_month)
         case 'dispatch':
-            print(data)
+            await dialog_manager.start(state=Dispatch.edit_dispatch)
         case _:
             print(data)
 
@@ -91,3 +94,38 @@ async def admin_close_slot(callback: CallbackQuery, widget: Select,
                                f'Администратор отменил Вашу запись {text_date} - {text_time}')
     await admin_change_slot_data(date, time, 0, True, session)
     await dialog_manager.switch_to(state=AdminEditCalendary.choose_time)
+
+
+##### РАССЫЛКА
+
+# админ ввел текст для рассылки
+async def edit_dispatch(
+        message: Message,
+        widget: ManagedTextInput,
+        dialog_manager: DialogManager,
+        text: str) -> None:
+    await dialog_manager.update({'text': text})
+    await dialog_manager.next(show_mode=ShowMode.EDIT)
+
+
+# запуск рассылки
+async def start_dispatch(
+        message: Message,
+        widget: ManagedTextInput,
+        dialog_manager: DialogManager) -> None:
+    session = dialog_manager.middleware_data['session']
+    user_ids = await get_all_users_from_db(session)
+    admin_ids = dialog_manager.middleware_data['admin_ids']
+    message_text = bytes(dialog_manager.dialog_data.get('text'), encoding='utf-8')
+    js = dialog_manager.middleware_data.get('js')
+    subject = dialog_manager.middleware_data.get('dispatch_subject')
+
+    for id in user_ids:
+        if id not in admin_ids:
+            await send_dispatch(js=js,
+                                subject=subject,
+                                delay=1,
+                                user_id=id,
+                                payload=message_text)
+
+    await dialog_manager.next(show_mode=ShowMode.EDIT)
