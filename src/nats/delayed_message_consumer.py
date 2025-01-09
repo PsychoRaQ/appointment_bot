@@ -12,7 +12,7 @@ from nats.js import JetStreamContext
 logger = logging.getLogger(__name__)
 
 '''
-консьюмер
+консьюмер отложенных уведомлений
 '''
 
 

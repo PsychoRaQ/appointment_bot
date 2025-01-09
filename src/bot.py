@@ -35,7 +35,8 @@ async def main() -> None:
     )
 
     # подключаем редис
-    storage = RedisStorage(redis=Redis(host='localhost'), key_builder=DefaultKeyBuilder(with_destiny=True))
+    redis = Redis(host='localhost', port=6380)
+    storage = RedisStorage(redis=redis, key_builder=DefaultKeyBuilder(with_destiny=True))
 
     # Настройка конфига
     config = load_config('.env')
