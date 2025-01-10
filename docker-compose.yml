@@ -11,7 +11,7 @@ services:
     volumes:
       - ./nats/data:/data
       - ./nats/config/server.conf:/config/server.conf
-      -
+
   nats-nui:
     image: ghcr.io/nats-nui/nui:latest
     container_name: nats-nui
@@ -21,7 +21,6 @@ services:
       - ./nui/db:/db
     depends_on:
       - nats
-      -
 
   postgres:
     image: postgres:15-alpine
@@ -33,7 +32,7 @@ services:
       POSTGRES_PASSWORD: superpassword
       POSTGRES_DB: data
     volumes:
-      - "01-simple-alchemy-postgres:/var/lib/postgresql/data"
+      - "appointment_bot:/var/lib/postgresql/data"
 
   pgadmin:
     image: dpage/pgadmin4:latest
@@ -44,18 +43,18 @@ services:
       PGADMIN_DEFAULT_EMAIL: a@a.com
       PGADMIN_DEFAULT_PASSWORD: pgadmin
     volumes:
-      - "01-simple-alchemy-pgadmin:/var/lib/pgadmin"
+      - "appointment_bot:/var/lib/pgadmin"
     depends_on:
       - postgres
 
-volumes:
-  01-simple-alchemy-pgadmin:
-  01-simple-alchemy-postgres:
-
   redis:
     image: redis:latest
-    command:
-      - redis-server
+    ports:
+      - "6380:6379"
     restart: on-failure
     volumes:
-      - "./schedule-app_bot-data-redis:/var/lib/redis/data"
+      - "./appointment_bot:/var/lib/redis/data"
+
+volumes:
+  appointment_bot-pgadmin:
+  appointment_bot-postgres:

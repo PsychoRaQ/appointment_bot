@@ -145,7 +145,7 @@ dispatch_dialog = Dialog(
         state=Dispatch.edit_dispatch
     ),
     Window(
-        Const(text='Подтвердите рассылку:\n\n'),
+        Const(text='Подтвердите рассылку:\n'),
         Format('{text}'),
         Button(Const(text='Запустить рассылку'), id='next_button', on_click=start_dispatch),
         Back(Const(text='← Назад'),
@@ -154,7 +154,7 @@ dispatch_dialog = Dialog(
     ),
     Window(
         Const(text='Рассылка отправлена!\n'
-                   'Текст рассылки:\n\n'),
+                   'Текст рассылки:\n'),
         Format('{text}'),
         Cancel(Const(text='☰ Главное меню'),
                id='cancel_button'),

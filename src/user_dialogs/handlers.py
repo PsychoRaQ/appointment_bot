@@ -152,7 +152,7 @@ async def user_new_time_appointment(callback: CallbackQuery, widget: Select,
             time_to_send_notification = datetime.datetime.combine(date, time)
 
             delay = int((time_to_send_notification - timestamp).total_seconds()) - 3600 * 24
-            delay = 10  # для теста - убрать в проде
+            # delay = 10  # для теста - убрать в проде
 
             js = dialog_manager.middleware_data.get('js')
             subject = dialog_manager.middleware_data.get('delay_del_subject')
