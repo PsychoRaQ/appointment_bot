@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 # Создание списка с датами на месяц (month)
 # Основная функция, здесь работа с датами и заготовка под конечный результат
-async def create_date_list(month, session, status) -> list:
+async def create_date_list(month, session, status, admin_id) -> list:
     years = (2024, 2028, 2032, 2036, 2040)
     day = 31 if month in (1, 3, 5, 7, 8, 10, 12) else 30
     year = datetime.datetime.today().year
@@ -36,18 +36,18 @@ async def create_date_list(month, session, status) -> list:
 
     date_lst = [f'{i}' for i in range(current_day, day + 1)]
     date_lst = list((map(lambda x: '0' + x if len(x) == 1 else x, date_lst)))
-    date_lst = await delete_locked_dates(date_lst, month, year, session, False)
+    date_lst = await delete_locked_dates(date_lst, month, year, session, False, admin_id)
     return date_lst
 
 
 # Вспомогательная функция для создания списка с датами, здесь получение данных из БД и подстановка их
 # в кортеж для отправки в геттер
-async def delete_locked_dates(date_lst, month, year, session, for_admin: bool) -> list:
+async def delete_locked_dates(date_lst, month, year, session, for_admin: bool, admin_id) -> list:
     cur_month = str(month)
     year = str(year)
     cur_month = f'0{cur_month}' if len(cur_month) == 1 else cur_month
 
-    dates_scalar = await get_free_dates_from_db(session, for_admin)
+    dates_scalar = await get_free_dates_from_db(session, for_admin, admin_id)
 
     dates_list = []
     if dates_scalar:
@@ -90,7 +90,7 @@ async def refactor_phone_number(number):
 
 # Создание списка с датами на месяц (month)
 # Основная функция, здесь работа с датами и заготовка под конечный результат
-async def create_admin_date_list(month, session) -> list:
+async def create_admin_date_list(month, session, admin_id) -> list:
     years = (2024, 2028, 2032, 2036, 2040)
     day = 31 if month in (1, 3, 5, 7, 8, 10, 12) else 30
     year = datetime.datetime.today().year
@@ -102,7 +102,7 @@ async def create_admin_date_list(month, session) -> list:
         day = 28
     date_lst = [f'{i}' for i in range(1, day + 1)]
     date_lst = list((map(lambda x: '0' + x if len(x) == 1 else x, date_lst)))
-    date_lst = await delete_locked_dates(date_lst, month, year, session, True)
+    date_lst = await delete_locked_dates(date_lst, month, year, session, True, admin_id)
     return date_lst
 
 

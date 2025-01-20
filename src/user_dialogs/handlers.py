@@ -7,9 +7,10 @@ from aiogram_dialog.widgets.kbd import Button, Select
 import datetime
 # состояния
 from src.fsm.user_states import StartSG, MainMenuSG, UserAppointmentSG, UserNewAppointmentSG, HelpSG, FeedbackSG
+from src.fsm.admin_states import AdminMenuSG
 # функции для работы с базой данных
 from src.services.database_func import (add_new_user, user_confirm_datetime, get_slot_with_user_id, user_is_register,
-                                        get_slot_from_db)
+                                        get_slot_from_db, get_pcode_with_name, delete_pcode)
 # сервисные функции
 from src.services.service_func import return_user_is_max_appointment, refactor_phone_number, datetime_format
 # импорт паблишера для отпавки отложенного сообщения
@@ -32,7 +33,7 @@ async def go_next(callback: CallbackQuery, button: Button, dialog_manager: Dialo
 
 # Хэндлер для кнопки "Пройти регистрацию сначала" в меню подтверждения данных
 async def cancel_registration(callback: CallbackQuery, button: Button, dialog_manager: DialogManager) -> None:
-    await dialog_manager.switch_to(StartSG.start)
+    await dialog_manager.switch_to(StartSG.start_with_pcode)
 
 
 # Хэндлер для кнопки "Подтвердить регистрацию" в меню подтверждения данных
@@ -41,10 +42,33 @@ async def confirm_registration(callback: CallbackQuery, button: Button, dialog_m
     username = dialog_manager.dialog_data.get('username')
     phone = dialog_manager.dialog_data.get('phone')
     session = dialog_manager.middleware_data['session']
-
-    await add_new_user(session, user_id, username, phone)
+    admin_id = dialog_manager.dialog_data.get('admin_id')
+    grand_admin_id = dialog_manager.middleware_data.get('admin_ids')
+    if admin_id in grand_admin_id:
+        role = 'admin'
+        next_state = AdminMenuSG.admin_menu
+        await delete_pcode(admin_id, session)
+    else:
+        role = 'user'
+        next_state = MainMenuSG.main_menu
+    await add_new_user(session, user_id, username, phone, admin_id, role)
     await dialog_manager.done()
-    await dialog_manager.start(MainMenuSG.main_menu)
+    await dialog_manager.start(next_state)
+
+
+# проверка промокода
+async def check_pcode(message: Message,
+                      widget: ManagedTextInput,
+                      dialog_manager: DialogManager,
+                      text: str):
+    session = dialog_manager.middleware_data['session']
+    pcode_in_database = await get_pcode_with_name(text.upper(), session)
+    if pcode_in_database:
+        admin_id = pcode_in_database.admin_id
+        dialog_manager.dialog_data.update({'admin_id': admin_id})
+        await dialog_manager.switch_to(state=StartSG.start_with_pcode)
+    else:
+        await dialog_manager.switch_to(state=StartSG.wrong_pcode)
 
 
 # Обработчик-фильтр для проверки корректности имени пользователя
@@ -145,14 +169,15 @@ async def user_new_time_appointment(callback: CallbackQuery, widget: Select,
             status = 'confirm'
             date, text_date, time, text_time = await datetime_format(date=dialog_manager.dialog_data.get('date'),
                                                                      time=data)
-            result = await user_confirm_datetime(callback.message.chat.id, date, time, status, session)
+            admin_id = dialog_manager.dialog_data.get('admin_id')
+            result = await user_confirm_datetime(callback.message.chat.id, date, time, status, admin_id, session)
 
             # настройка отложенного уведомления пользователю (за 24ч до записи)
             timestamp = datetime.datetime.now()
             time_to_send_notification = datetime.datetime.combine(date, time)
 
             delay = int((time_to_send_notification - timestamp).total_seconds()) - 3600 * 24
-            # delay = 10  # для теста - убрать в проде
+            delay = 10  # для теста - убрать в проде
 
             js = dialog_manager.middleware_data.get('js')
             subject = dialog_manager.middleware_data.get('delay_del_subject')
@@ -188,7 +213,8 @@ async def user_delete_appointment(callback: CallbackQuery, widget: Select,
     date = date.replace('.', '-')
     date, text_date, time, text_time = await datetime_format(date, time)
     session = dialog_manager.middleware_data['session']
-    slot = await get_slot_from_db(date, time, session)
+    admin_id = dialog_manager.dialog_data.get('admin_id')
+    slot = await get_slot_from_db(date, time, admin_id, session)
     comment = slot.comment
     await dialog_manager.update(
         {'text_date': text_date, 'text_time': text_time, 'comment': comment})
@@ -205,6 +231,7 @@ async def user_is_confirm_delete_appointment(callback: CallbackQuery, widget: Se
     text_date = dialog_manager.dialog_data.get('text_date')
     text_time = dialog_manager.dialog_data.get('text_time')
     date, text_date, time, text_time = await datetime_format(text_date, text_time)
+    admin_id = dialog_manager.dialog_data.get('admin_id')
 
     status = 'delete'
     # отправляем в кв бакет состояние слота (отмена уведомления)
@@ -214,17 +241,14 @@ async def user_is_confirm_delete_appointment(callback: CallbackQuery, widget: Se
 
     user = await user_is_register(session, user_id)
     bot = dialog_manager.middleware_data['bot']
-    admin_ids = dialog_manager.middleware_data['admin_ids']
-    if user_id not in admin_ids:
-        for adm_id in admin_ids:
-            try:
-                await bot.send_message(adm_id,
-                                       f'Пользователь {user.username} отменил свою запись {text_date} - {text_time}\n'
-                                       f'Телефон: {user.phone}')
-            except:
-                continue
+    try:
+        await bot.send_message(admin_id,
+                               f'Пользователь {user.username} отменил свою запись {text_date} - {text_time}\n'
+                               f'Телефон: {user.phone}')
+    except:
+        pass
 
-    await user_confirm_datetime(user_id, date, time, status, session)
+    await user_confirm_datetime(user_id, date, time, status, admin_id, session)
     await dialog_manager.next(show_mode=ShowMode.EDIT)
 
     ###### ЗАПИСЬ ОТ ЛИЦА АДМИНА

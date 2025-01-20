@@ -14,3 +14,16 @@ class UserIsRegister(BaseFilter):
     async def __call__(self, message, session: AsyncSession) -> bool:
         result = await user_is_register(session, message.from_user.id)
         return result is not None
+
+
+class UserIsAdmin(BaseFilter):
+    async def __call__(self, message, **data) -> bool:
+        role = data.get('user_role')
+        print(role)
+        return role in ('admin', 'grand_admin')
+
+
+class UserIsGrandAdmin(BaseFilter):
+    async def __call__(self, message, **data) -> bool:
+        role = data.get('user_role')
+        return role in ('grand_admin')

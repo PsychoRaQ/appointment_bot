@@ -4,11 +4,12 @@ from aiogram_dialog import DialogManager, ShowMode
 from aiogram_dialog.widgets.input import ManagedTextInput
 from aiogram_dialog.widgets.kbd import Select
 # состояния
-from src.fsm.admin_states import AdminEditCalendary, AllAppointments, Dispatch
+from src.fsm.admin_states import AdminEditCalendary, AllAppointments, Dispatch, Pcode
 from src.fsm.user_states import UserNewAppointmentSG, UserAppointmentSG
 # функции для работы с БД
 from src.services.database_func import (get_slot_from_db, admin_change_slot_data, add_new_time_slot,
-                                        get_slot_with_user_id, get_all_users_from_db)
+                                        get_slot_with_user_id, get_all_users_from_db, edit_admin_pcode,
+                                        get_pcode_with_name, get_all_users_with_admin_id)
 # сервисная функция для форматирования даты/времени
 from src.services.service_func import datetime_format
 # для рассылки
@@ -40,6 +41,13 @@ async def admin_dialog_selection(callback: CallbackQuery, widget: Select,
             await dialog_manager.start(state=AllAppointments.first_month)
         case 'dispatch':
             await dialog_manager.start(state=Dispatch.edit_dispatch)
+        case 'pcodes':
+            await dialog_manager.start(state=Pcode.main_pcode)
+        case 'admin_settings':
+            pass
+        # старшая админка
+        case 'all_admins_list':
+            pass
         case _:
             print(data)
 
@@ -68,15 +76,16 @@ async def admin_choose_time_slot_for_edit(callback: CallbackQuery, widget: Selec
     await dialog_manager.update({'time': data})
     date, text_date, time, text_time = await datetime_format(date=dialog_manager.dialog_data.get('date'), time=data)
     session = dialog_manager.middleware_data['session']
-    slot = await get_slot_from_db(date, time, session)
+    admin_id = callback.from_user.id
+    slot = await get_slot_from_db(date, time, admin_id, session)
     if slot:
         if slot.user_id == 0:
             status = 0 if slot.is_locked else 1
-            await admin_change_slot_data(date, time, 0, status, session)
+            await admin_change_slot_data(date, time, 0, status, admin_id, session)
         else:
             await dialog_manager.switch_to(state=AdminEditCalendary.user_on_date)
     else:
-        await add_new_time_slot(date, time, session)
+        await add_new_time_slot(date, time, admin_id, session)
 
 
 # Админ решил закрыть слот на который записан пользователь
@@ -85,14 +94,15 @@ async def admin_close_slot(callback: CallbackQuery, widget: Select,
     session = dialog_manager.middleware_data['session']
     date, text_date, time, text_time = await datetime_format(date=dialog_manager.dialog_data.get('date'),
                                                              time=dialog_manager.dialog_data.get('time'))
-    slot = await get_slot_from_db(date, time, session)
+    admin_id = callback.from_user.id
+    slot = await get_slot_from_db(date, time, admin_id, session)
     user_id = slot.user_id
     is_admin = user_id in dialog_manager.middleware_data['admin_ids']
     if user_id and is_admin is False:
         bot = dialog_manager.middleware_data['bot']
         await bot.send_message(user_id,
                                f'Администратор отменил Вашу запись {text_date} - {text_time}')
-    await admin_change_slot_data(date, time, 0, True, session)
+    await admin_change_slot_data(date, time, 0, True, admin_id, session)
     await dialog_manager.switch_to(state=AdminEditCalendary.choose_time)
 
 
@@ -109,13 +119,12 @@ async def edit_dispatch(
 
 
 # запуск рассылки
-async def start_dispatch(
-        message: Message,
-        widget: ManagedTextInput,
-        dialog_manager: DialogManager) -> None:
+async def start_dispatch(callback: CallbackQuery,
+                         widget: ManagedTextInput,
+                         dialog_manager: DialogManager) -> None:
     session = dialog_manager.middleware_data['session']
-    user_ids = await get_all_users_from_db(session)
     admin_ids = dialog_manager.middleware_data['admin_ids']
+    user_ids = await get_all_users_with_admin_id(session, callback.from_user.id)
     message_text = bytes(dialog_manager.dialog_data.get('text'), encoding='utf-8')
     js = dialog_manager.middleware_data.get('js')
     subject = dialog_manager.middleware_data.get('dispatch_subject')
@@ -129,3 +138,38 @@ async def start_dispatch(
                                 payload=message_text)
 
     await dialog_manager.next(show_mode=ShowMode.EDIT)
+
+
+##### ПРОМОКОДЫ АДМИНОВ
+
+# Обработчик-фильтр для проверки корректности промокода
+def check_pcode(data: str) -> str:
+    if 11 > len(data) > 1:
+        return data
+    raise ValueError
+
+
+# изменение промокода
+async def edit_pcode(
+        message: Message,
+        widget: ManagedTextInput,
+        dialog_manager: DialogManager,
+        data: str) -> None:
+    dialog_manager.dialog_data.update({'pcode': data.upper()})
+    await dialog_manager.next()
+
+
+# изменение промокода
+async def confirm_pcode(
+        message: Message,
+        widget: ManagedTextInput,
+        dialog_manager: DialogManager) -> None:
+    pcode = dialog_manager.dialog_data.get('pcode')
+    session = dialog_manager.middleware_data['session']
+    admin_id = message.from_user.id
+    unique = await get_pcode_with_name(pcode, session)
+    if unique:
+        await dialog_manager.switch_to(state=Pcode.error_pcode)
+    else:
+        await edit_admin_pcode(admin_id, pcode, session)
+        await dialog_manager.next()

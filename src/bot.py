@@ -12,8 +12,6 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 # диалоги для подключения
 from admin_dialogs import dialogs as admin_dg
-from src.nats.nats_connect import connect_to_nats
-from src.services.start_consumers import start_delayed_consumer, start_dispatch_consumer
 from user_dialogs import dialogs as user_dg
 # конфигурация бота
 from config_data.config import load_config, load_database, load_nats
@@ -21,10 +19,14 @@ from config_data.config import load_config, load_database, load_nats
 from handlers import user_handlers, unregister_handlers, admin_handlers
 # мидлвари
 from middlewares.session import DbSessionMiddleware
+from middlewares.user_role import UserRoleMiddlware
 # функция для внесения всех пользователей из базы в кэш
 from src.services.database_func import get_all_users_from_db
 # меню бота
 from src.services.service_func import set_main_menu
+# натс
+from src.nats.nats_connect import connect_to_nats
+from src.services.start_consumers import start_delayed_consumer, start_dispatch_consumer
 
 
 async def main() -> None:
@@ -74,6 +76,7 @@ async def main() -> None:
 
     # подключаем мидлвари
     dp.update.outer_middleware(DbSessionMiddleware(Sessionmaker))
+    dp.update.outer_middleware(UserRoleMiddlware())
 
     # Подключаем роутеры для хэндлеров
     dp.include_router(admin_handlers.router)
@@ -85,6 +88,7 @@ async def main() -> None:
     dp.include_router(admin_dg.edit_calendary)
     dp.include_router(admin_dg.all_appointments)
     dp.include_router(admin_dg.dispatch_dialog)
+    dp.include_router(admin_dg.new_pcode)
 
     # Подключаем роутеры для диалогов пользователей
     dp.include_router(user_dg.main_menu_dialog)

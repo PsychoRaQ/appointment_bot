@@ -1,8 +1,10 @@
 # аиограм
 from aiogram import F
+from aiogram.enums import ContentType
 from aiogram_dialog import Dialog, Window
 from aiogram_dialog.widgets.input import TextInput
 from aiogram_dialog.widgets.kbd import Button, Row, Back, Next, Select, Group, Cancel, SwitchTo
+from aiogram_dialog.widgets.media import StaticMedia
 from aiogram_dialog.widgets.text import Const, Format, List
 
 # все состояния прописаны в одном месте
@@ -15,7 +17,7 @@ from src.user_dialogs.getters import (get_userdata, get_main_menu, get_user_appo
                                       get_help_menu, get_feedback)
 # хэндлеры для диалога регистрации
 from src.user_dialogs.handlers import (check_username, confirm_registration, correct_input, error_input, check_phone,
-                                       cancel_registration, go_next)
+                                       cancel_registration, go_next, check_pcode)
 # хэндлеры для записи от лица администратора (с комментарием)
 from src.user_dialogs.handlers import (confirmed_admin_appointment, new_appointment_from_admin,
                                        back_btn_adm_appointment)
@@ -34,10 +36,27 @@ from src.user_dialogs.handlers import (user_new_date_appointment, user_new_time_
 # Диалог регистрации пользователя
 start_dialog = Dialog(
     Window(
+        Const(
+            'Добро пожаловать!\nПожалуйста, введите промокод пригласившего Вас администратора или пройдите по его персональной ссылке.'),
+        TextInput(
+            id='pcode_input',
+            on_success=check_pcode,
+        ),
+        state=StartSG.start
+    ),
+    Window(
+        Const(
+            'Промокод не найден!\nПожалуйста, введите правильный промокод или пройдите по персональной ссылке администратора.'),
+        TextInput(
+            id='pcode_input',
+            on_success=check_pcode,
+        ),
+        state=StartSG.wrong_pcode
+    ),
+    Window(
         Const('Добро пожаловать!\nПеред тем как записаться, нужно пройти регистрацию'),
         Next(Const('Зарегистрироваться'), id='b_next'),
-        getter=get_userdata,
-        state=StartSG.start
+        state=StartSG.start_with_pcode
     ),
     Window(
         Const(
@@ -52,7 +71,6 @@ start_dialog = Dialog(
             Back(Const('← Назад'), id='b_back'),
             Button(Const('Продолжить →'), id='b_next_username', on_click=go_next),
         ),
-        getter=get_userdata,
         state=StartSG.get_name,
     ),
     Window(
@@ -65,14 +83,12 @@ start_dialog = Dialog(
             on_error=error_input,
         ),
         Back(Const('← Назад'), id='b_back'),
-        getter=get_userdata,
         state=StartSG.get_phone
     ),
     Window(
         Format('Пожалуйста, проверьте Ваши данные.\nИмя: {username}\nТелефон: {phone}\n\nВсе верно?'),
-        Button(Const('Подтвердить регистрацию'), id='b_confirm', on_click=confirm_registration),
         Button(Const('Пройти регистрацию сначала'), id='b_cancel', on_click=cancel_registration),
-        getter=get_userdata,
+        Button(Const('Подтвердить регистрацию'), id='b_confirm', on_click=confirm_registration),
         state=StartSG.confirm
     ),
     getter=get_userdata,
@@ -259,7 +275,11 @@ user_new_appointment_dialog = Dialog(
 feedback_dialog = Dialog(
     Window(
         Format(text='Для обратной связи напишите администратору:'),
-        Format(text='{url}'),
+        # Format(text='{url}'),
+        StaticMedia(
+            path='spam.jpg',
+            type=ContentType.PHOTO
+        ),
         Cancel(Const(text='☰ Главное меню'), id='cancel_button'),
         state=FeedbackSG.feedback,
         getter=get_feedback,

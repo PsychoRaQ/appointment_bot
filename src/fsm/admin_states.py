@@ -30,3 +30,12 @@ class Dispatch(StatesGroup):
     edit_dispatch = State()  # ввод текста для рассылки
     confirm_dispatch = State()  # подтверждение данных рассылки
     dispatch_is_successfull = State()  # рассылка отправлена
+
+
+# промокод
+class Pcode(StatesGroup):
+    main_pcode = State()  # отображение рефералки и промокода
+    edit_pcode = State()  # изменение промокода
+    confirm_pcode = State()  # подтверждение нового промокода
+    pcode_edit_successfull = State()  # промокод успешно изменен
+    error_pcode = State()  # ошибка в промокоде или он не уникальный

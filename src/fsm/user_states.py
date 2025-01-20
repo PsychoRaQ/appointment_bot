@@ -8,9 +8,11 @@ from aiogram.fsm.state import State, StatesGroup
 # Регистрация пользователя
 class StartSG(StatesGroup):
     start = State()  # окно с приветствием и предложением пройти регистрацию
+    start_with_pcode = State()  # окно после успешного ввода промокода или ссылки
     get_name = State()  # окно ввода имени
     get_phone = State()  # окно ввода контактного телефона
     confirm = State()  # окно подтверждения, при положительном ответе - перекидываем в главное меню
+    wrong_pcode = State()  # окно после неудачного ввода промокода или ссылки
 
 
 # Главное меню

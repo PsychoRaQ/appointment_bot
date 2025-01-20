@@ -15,3 +15,4 @@ class Slots(Base):
     is_locked = Column(Integer, default=0)
     user_id = Column(BigInteger, default=0)
     comment = Column(String, default=None)
+    admin_id = Column(BigInteger, default=0)

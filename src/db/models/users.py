@@ -14,3 +14,5 @@ class Users(Base):
     phone = Column(String, nullable=False)
     max_appointment = Column(Integer, default=2)
     created_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
+    admin_id = Column(BigInteger, default=0)
+    role = Column(String, default='user')
