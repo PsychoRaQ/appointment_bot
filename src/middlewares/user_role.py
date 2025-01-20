@@ -25,4 +25,12 @@ class UserRoleMiddlware(BaseMiddleware):
         user = await user_is_register(session, user_id)
         if user:
             data["user_role"] = user.role
+            if user.role == 'admin':
+                kv = data.get('subscribe_storage')
+                kv_data = await kv.get(str(user_id))
+                days = int(kv_data.value.decode("utf-8"))
+                if days <= 0:
+                    data["subscribe"] = 'unpaid'
+                else:
+                    data["subscribe"] = 'paid'
         return await handler(event, data)

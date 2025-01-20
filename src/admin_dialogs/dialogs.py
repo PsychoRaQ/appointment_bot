@@ -41,7 +41,7 @@ main_menu_dialog = Dialog(
                 on_click=admin_dialog_selection,
             ),
             width=1,
-            when=F['user_role'] == 'admin'
+            when=F['user_role'] == 'admin' and F['subscribe'] == 'paid'
         ),
         Group(
             Select(
@@ -54,6 +54,8 @@ main_menu_dialog = Dialog(
             width=1,
             when=F['user_role'] == 'grand_admin'
         ),
+        Button(Const(text='Оплатить подписку'), id='pay_btn',
+               when=F['user_role'] == 'admin' and F['subscribe'] == 'unpaid'),
         state=AdminMenuSG.admin_menu,
         getter=get_admin_menu
     ),

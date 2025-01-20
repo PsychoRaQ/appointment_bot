@@ -29,8 +29,8 @@ async def command_start_process(message: Message, dialog_manager: DialogManager)
         session = dialog_manager.middleware_data['session']
         pcode_in_database = await get_admin_pcode(admin_id, session)
         if pcode_in_database:
-            dialog_manager.dialog_data.update({'admin_id': admin_id})
             await dialog_manager.start(state=StartSG.start_with_pcode, mode=StartMode.RESET_STACK)
+            dialog_manager.dialog_data.update({'admin_id': admin_id})
         else:
             await dialog_manager.start(state=StartSG.wrong_pcode, mode=StartMode.RESET_STACK)
     else:

@@ -43,3 +43,21 @@ async def send_dispatch(
 
     }
     await js.publish(subject=subject, payload=payload, headers=headers)
+
+
+# паблишер для подписки
+async def new_subscribe(
+        js: JetStreamContext,
+        subject: str,
+        delay: int,
+        user_id: int,
+        days=int
+) -> None:
+    headers = {
+        'Tg-Delayed-Msg-Timestamp': str(datetime.now().timestamp()),
+        'Tg-Delayed-Msg-Delay': str(delay),
+        'user_id': str(user_id),
+        'days': str(days),
+
+    }
+    await js.publish(subject=subject, headers=headers)

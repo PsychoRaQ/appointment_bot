@@ -3,6 +3,7 @@ from aiogram import Bot
 # консьюмер
 from src.nats.delayed_message_consumer import DelayedMessageConsumer
 from src.nats.dispatch_consumer import DispatchConsumer
+from src.nats.subscribe_consumer import SubscribeConsumer
 # натс
 from nats.aio.client import Client
 from nats.js.client import JetStreamContext
@@ -55,4 +56,25 @@ async def start_dispatch_consumer(
         durable_name=durable_name,
     )
     logger.info('Start dispatch consumer')
+    await consumer.start()
+
+
+# запуск консьюмера подписки
+async def start_subscribe_consumer(
+        nc: Client,
+        js: JetStreamContext,
+        bot: Bot,
+        subject: str,
+        stream: str,
+        durable_name: str,
+) -> None:
+    consumer = SubscribeConsumer(
+        nc=nc,
+        js=js,
+        bot=bot,
+        subject=subject,
+        stream=stream,
+        durable_name=durable_name,
+    )
+    logger.info('Start subscribe consumer')
     await consumer.start()

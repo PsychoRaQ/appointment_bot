@@ -26,7 +26,7 @@ from src.services.database_func import get_all_users_from_db
 from src.services.service_func import set_main_menu
 # натс
 from src.nats.nats_connect import connect_to_nats
-from src.services.start_consumers import start_delayed_consumer, start_dispatch_consumer
+from src.services.start_consumers import (start_delayed_consumer, start_dispatch_consumer, start_subscribe_consumer)
 
 
 async def main() -> None:
@@ -52,7 +52,8 @@ async def main() -> None:
     # настройка nats
     nats_cfg = load_nats()
     nc, js = await connect_to_nats(servers=nats_cfg.nats.servers)
-    js_storage = await js.create_key_value(bucket='kv_storage')
+    delayed_bucket = await js.create_key_value(bucket='kv_storage')
+    subscribe_bucket = await js.create_key_value(bucket='subscribe_storage')
 
     # создаем движок Алхимии с параметрами из конфига
     engine = create_async_engine(url=database_config.dsn, echo=database_config.is_echo)
@@ -72,7 +73,9 @@ async def main() -> None:
     # передача переменных из конфига в диспетчер
     dp.workflow_data.update({'admin_ids': admin_ids, 'description': description, 'admin_url': admin_url,
                              'js': js, 'delay_del_subject': nats_cfg.delayed_consumer.subject,
-                             'dispatch_subject': nats_cfg.dispatch_consumer.subject, 'storage': js_storage})
+                             'dispatch_subject': nats_cfg.dispatch_consumer.subject,
+                             'subscribe_subject': nats_cfg.subscribe_consumer.subject, 'storage': delayed_bucket,
+                             'subscribe_storage': subscribe_bucket})
 
     # подключаем мидлвари
     dp.update.outer_middleware(DbSessionMiddleware(Sessionmaker))
@@ -122,8 +125,16 @@ async def main() -> None:
                 js=js,
                 bot=bot,
                 subject=nats_cfg.dispatch_consumer.subject,
-                stream=nats_cfg.delayed_consumer.stream,
+                stream=nats_cfg.dispatch_consumer.stream,
                 durable_name=nats_cfg.dispatch_consumer.durable_name,
+            ),
+            start_subscribe_consumer(
+                nc=nc,
+                js=js,
+                bot=bot,
+                subject=nats_cfg.subscribe_consumer.subject,
+                stream=nats_cfg.subscribe_consumer.stream,
+                durable_name=nats_cfg.subscribe_consumer.durable_name,
             )
         )
 

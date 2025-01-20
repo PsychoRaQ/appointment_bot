@@ -183,4 +183,5 @@ async def get_pcode_from_dialog(dialog_manager: DialogManager, **kwargs) -> dict
 # для фильтрации на админку
 async def get_admin_role(dialog_manager: DialogManager, event_from_user: User, **kwargs) -> dict:
     user_role = dialog_manager.middleware_data.get('user_role')
-    return {'user_role': user_role}
+    subscribe = dialog_manager.middleware_data.get('subscribe')
+    return {'user_role': user_role, 'subscribe': subscribe}

@@ -178,18 +178,18 @@ async def edit_admin_pcode(admin_id, pcode, session: AsyncSession):
     await session.commit()
 
 
-# удаление промокода админа из базы
-async def delete_pcode(admin_id, session: AsyncSession):
-    stmt = select(Pcodes).where(Pcodes.admin_id == admin_id)
-    result = await session.execute(stmt)
-    pcode = result.scalar()
-    if pcode:
-        await session.delete(pcode)
-
-
 # получаем всех пользователей админа по его id
 async def get_all_users_with_admin_id(session, admin_id):
     stmt = select(Users.telegram_id).where(Users.admin_id == admin_id)
     registered_users = await session.execute(stmt)
     result = registered_users.scalars().all()
     return result
+
+
+# изменяем роль пользователя по id
+async def edit_role(session, admin_id, role):
+    stmt = select(Users).where(Users.telegram_id == admin_id)
+    result = await session.execute(stmt)
+    user = result.scalar()
+    user.role = role
+    await session.commit()

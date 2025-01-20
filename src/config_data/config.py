@@ -35,6 +35,7 @@ class Nats:
     nats: NatsConfig
     delayed_consumer: NatsDelayedConsumerConfig
     dispatch_consumer: NatsDelayedConsumerConfig
+    subscribe_consumer: NatsDelayedConsumerConfig
 
 
 def load_nats(path: str | None = None):
@@ -51,6 +52,11 @@ def load_nats(path: str | None = None):
             subject=env('NATS_DISPATCH_CONSUMER_SUBJECT'),
             stream=env('NATS_DELAYED_CONSUMER_STREAM'),
             durable_name=env('NATS_DISPATCH_CONSUMER_DURABLE_NAME')
+        ),
+        subscribe_consumer=NatsDelayedConsumerConfig(
+            subject=env('NATS_SUBSCRIBE_CONSUMER_SUBJECT'),
+            stream=env('NATS_DELAYED_CONSUMER_STREAM'),
+            durable_name=env('NATS_SUBSCRIBE_CONSUMER_DURABLE_NAME')
         )
     )
 

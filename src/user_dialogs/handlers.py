@@ -1,20 +1,22 @@
 # аиограм
-from aiogram.types import Message, CallbackQuery
-from aiogram_dialog import DialogManager, ShowMode
-from aiogram_dialog.widgets.input import ManagedTextInput
-from aiogram_dialog.widgets.kbd import Button, Select
 # системное
 import datetime
+
+from aiogram.types import Message, CallbackQuery
+from aiogram_dialog import DialogManager, ShowMode, StartMode
+from aiogram_dialog.widgets.input import ManagedTextInput
+from aiogram_dialog.widgets.kbd import Button, Select
+
+from src.fsm.admin_states import AdminMenuSG
 # состояния
 from src.fsm.user_states import StartSG, MainMenuSG, UserAppointmentSG, UserNewAppointmentSG, HelpSG, FeedbackSG
-from src.fsm.admin_states import AdminMenuSG
+# импорт паблишера для отпавки отложенного сообщения
+from src.nats.publishers import send_delay_message_publisher, new_subscribe
 # функции для работы с базой данных
 from src.services.database_func import (add_new_user, user_confirm_datetime, get_slot_with_user_id, user_is_register,
-                                        get_slot_from_db, get_pcode_with_name, delete_pcode)
+                                        get_slot_from_db, get_pcode_with_name, edit_admin_pcode)
 # сервисные функции
 from src.services.service_func import return_user_is_max_appointment, refactor_phone_number, datetime_format
-# импорт паблишера для отпавки отложенного сообщения
-from src.nats.publishers import send_delay_message_publisher
 
 '''
 Хэндлеры для всех диалогов и геттеров (пользователь)
@@ -44,16 +46,24 @@ async def confirm_registration(callback: CallbackQuery, button: Button, dialog_m
     session = dialog_manager.middleware_data['session']
     admin_id = dialog_manager.dialog_data.get('admin_id')
     grand_admin_id = dialog_manager.middleware_data.get('admin_ids')
+
     if admin_id in grand_admin_id:
         role = 'admin'
         next_state = AdminMenuSG.admin_menu
-        await delete_pcode(admin_id, session)
+        await edit_admin_pcode(user_id, str(user_id), session)
+
+        js = dialog_manager.middleware_data.get('js')
+        subject = dialog_manager.middleware_data.get('subscribe_subject')
+        kv = dialog_manager.middleware_data.get('subscribe_storage')
+
+        days = 30
+        await kv.put(str(user_id), bytes(str(days), encoding='utf-8'))
+        await new_subscribe(js=js, subject=subject, delay=1, user_id=user_id, days=days)
     else:
         role = 'user'
         next_state = MainMenuSG.main_menu
     await add_new_user(session, user_id, username, phone, admin_id, role)
-    await dialog_manager.done()
-    await dialog_manager.start(next_state)
+    await dialog_manager.start(state=next_state, mode=StartMode.RESET_STACK)
 
 
 # проверка промокода
@@ -65,7 +75,8 @@ async def check_pcode(message: Message,
     pcode_in_database = await get_pcode_with_name(text.upper(), session)
     if pcode_in_database:
         admin_id = pcode_in_database.admin_id
-        dialog_manager.dialog_data.update({'admin_id': admin_id})
+        pcode = pcode_in_database.pcode
+        dialog_manager.dialog_data.update({'admin_id': admin_id, 'pcode': pcode})
         await dialog_manager.switch_to(state=StartSG.start_with_pcode)
     else:
         await dialog_manager.switch_to(state=StartSG.wrong_pcode)

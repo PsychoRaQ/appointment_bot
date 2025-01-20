@@ -1,6 +1,7 @@
 # аиограм
 from aiogram import Router, F
 from aiogram.filters import CommandStart, MagicData, or_f
+from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 from aiogram_dialog import DialogManager, StartMode
 # функция-фильтр для проверки регистрации пользователя
