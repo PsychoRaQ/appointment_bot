@@ -3,17 +3,18 @@ from aiogram.types import CallbackQuery, Message
 from aiogram_dialog import DialogManager, ShowMode
 from aiogram_dialog.widgets.input import ManagedTextInput
 from aiogram_dialog.widgets.kbd import Select
+
 # состояния
-from src.fsm.admin_states import AdminEditCalendary, AllAppointments, Dispatch, Pcode
+from src.fsm.admin_states import AdminEditCalendary, AllAppointments, Dispatch, Pcode, AllAdmins
 from src.fsm.user_states import UserNewAppointmentSG, UserAppointmentSG
-# функции для работы с БД
-from src.services.database_func import (get_slot_from_db, admin_change_slot_data, add_new_time_slot,
-                                        get_slot_with_user_id, get_all_users_from_db, edit_admin_pcode,
-                                        get_pcode_with_name, get_all_users_with_admin_id)
-# сервисная функция для форматирования даты/времени
-from src.services.service_func import datetime_format
 # для рассылки
 from src.nats.publishers import send_dispatch
+# функции для работы с БД
+from src.services.database_func import (get_slot_from_db, admin_change_slot_data, add_new_time_slot,
+                                        get_slot_with_user_id, edit_admin_pcode,
+                                        get_pcode_with_name, get_all_users_with_admin_id, get_all_admins_from_db)
+# сервисная функция для форматирования даты/времени
+from src.services.service_func import datetime_format
 
 '''
 Хэндлеры для диалогов и геттеров (админка)
@@ -47,7 +48,7 @@ async def admin_dialog_selection(callback: CallbackQuery, widget: Select,
             pass
         # старшая админка
         case 'all_admins_list':
-            pass
+            await dialog_manager.start(state=AllAdmins.main_menu)
         case _:
             print(data)
 
@@ -173,3 +174,34 @@ async def confirm_pcode(
     else:
         await edit_admin_pcode(admin_id, pcode, session)
         await dialog_manager.next()
+
+
+###### УПРАВЛЕНИЕ АДМИНАМИ
+
+# переходим в меню управления админом с указанным id
+async def edit_admin_data(message: Message,
+                          widget: ManagedTextInput,
+                          dialog_manager: DialogManager,
+                          data: str) -> None:
+    session = dialog_manager.middleware_data.get('session')
+    admins = await get_all_admins_from_db(session)
+
+    admin_ids = [admin.telegram_id for admin in admins]
+    if int(data) in admin_ids:
+        dialog_manager.dialog_data.update({'admin_id': data})
+        await dialog_manager.next()
+    else:
+        pass
+
+
+# изменение дней подписки
+async def edit_sub_days(message: Message,
+                        widget: ManagedTextInput,
+                        dialog_manager: DialogManager,
+                        data: str) -> None:
+    admin_id = dialog_manager.dialog_data.get('admin_id')
+    kv_storage = dialog_manager.middleware_data.get('subscribe_storage')
+
+    days = int(data)
+    await kv_storage.put(str(admin_id), bytes(str(days), encoding='utf-8'))
+    await dialog_manager.switch_to(AllAdmins.main_menu)

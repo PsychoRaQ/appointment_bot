@@ -178,11 +178,19 @@ async def edit_admin_pcode(admin_id, pcode, session: AsyncSession):
     await session.commit()
 
 
-# получаем всех пользователей админа по его id
+# получаем id всех пользователей админа по его id
 async def get_all_users_with_admin_id(session, admin_id):
     stmt = select(Users.telegram_id).where(Users.admin_id == admin_id)
     registered_users = await session.execute(stmt)
     result = registered_users.scalars().all()
+    return result
+
+
+# получаем всех админов
+async def get_all_admins_from_db(session):
+    stmt = select(Users).where(Users.role == 'admin')
+    admins = await session.execute(stmt)
+    result = admins.scalars()
     return result
 
 

@@ -39,7 +39,10 @@ class SubscribeConsumer:
             durable=self.durable_name,
             manual_ack=True,
         )
-        self.kv_storage = await self.js.key_value(bucket='subscribe_storage')
+        try:
+            self.kv_storage = await self.js.key_value(bucket='subscribe_storage')
+        except:
+            pass
 
     # обработчик полученного сообщения
     async def on_message(self, msg: Msg):

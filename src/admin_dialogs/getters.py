@@ -1,12 +1,15 @@
 # аиограм и алхимия
-from aiogram.types import User
-from aiogram_dialog import DialogManager
-from sqlalchemy.ext.asyncio import AsyncSession
-from aiogram.utils.deep_linking import create_start_link
 # для работы с datetime
 import datetime
+
+from aiogram.types import User
+from aiogram.utils.deep_linking import create_start_link
+from aiogram_dialog import DialogManager
+from sqlalchemy.ext.asyncio import AsyncSession
+
 # функции для работы с БД
-from src.services.database_func import get_slots_list_from_db, get_slot_from_db, user_is_register, get_admin_pcode
+from src.services.database_func import (get_slots_list_from_db, get_slot_from_db, user_is_register, get_admin_pcode,
+                                        get_all_admins_from_db)
 # сервисные функции
 from src.services.service_func import create_admin_date_list, create_time_slots, datetime_format
 
@@ -24,11 +27,12 @@ async def get_admin_menu(**kwargs) -> dict:
         ('📑 Посмотреть все записи 📑', 'all_appointments'),
         ('✉️ Запустить рассылку ✉️', 'dispatch'),
         ('💬 Реферальная ссылка 💬', 'pcodes'),
-        ('❔ Настройки админки ❔', 'admin_settings'),
+        ('⚙ Настройки админки ⚙', 'admin_settings'),
     ]
     grand_admin_menu = [
-        ('💬 Реферальная ссылка 💬', 'pcodes'),
+        ('Реферальная ссылка', 'pcodes'),
         ('Список всех админов', 'all_admins_list'),
+        ('Запустить рассылку', 'dispatch'),
     ]
     return {'main_menu': main_menu, 'grand_admin_menu': grand_admin_menu}
 
@@ -165,7 +169,7 @@ async def get_dispatch_text(dialog_manager: DialogManager, **kwargs) -> dict:
 async def get_pcode_from_db(dialog_manager: DialogManager, event_from_user: User, **kwargs) -> dict:
     admin_id = event_from_user.id
     link = await create_start_link(dialog_manager.middleware_data['bot'], str(admin_id))
-    session = dialog_manager.middleware_data['session']
+    session = dialog_manager.middleware_data.get('session')
     pcode = await get_admin_pcode(admin_id, session)
     if not pcode:
         pcode = admin_id
@@ -185,3 +189,35 @@ async def get_admin_role(dialog_manager: DialogManager, event_from_user: User, *
     user_role = dialog_manager.middleware_data.get('user_role')
     subscribe = dialog_manager.middleware_data.get('subscribe')
     return {'user_role': user_role, 'subscribe': subscribe}
+
+
+# получение списка админов
+async def get_all_admins(dialog_manager: DialogManager, event_from_user: User, **kwargs) -> dict:
+    session = dialog_manager.middleware_data.get('session')
+    admins = await get_all_admins_from_db(session)
+    kv_storage = dialog_manager.middleware_data.get('subscribe_storage')
+    if admins:
+        result_lst = []
+        for admin in admins:
+            data = await kv_storage.get(admin.telegram_id)
+            result = {'admin_id': admin.telegram_id,
+                      'username': admin.username,
+                      'phone': admin.phone,
+                      'sub_days': int(data.value.decode("utf-8"))}
+            result_lst.append(result)
+    else:
+        result_lst = ['Нет доступных администраторов для отображения']
+
+    return {'admins': result_lst}
+
+
+# получение данных администратора по id
+async def get_admin_data(dialog_manager: DialogManager, event_from_user: User, **kwargs) -> dict:
+    admin_id = dialog_manager.dialog_data.get('admin_id')
+    kv_storage = dialog_manager.middleware_data.get('subscribe_storage')
+    data = await kv_storage.get(admin_id)
+    sub_days = int(data.value.decode("utf-8"))
+
+    admin_data = {'admin_id': admin_id, 'sub_days': sub_days}
+
+    return {'admin_data': admin_data}

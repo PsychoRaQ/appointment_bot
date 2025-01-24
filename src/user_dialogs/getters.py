@@ -91,7 +91,11 @@ async def get_free_dates_on_current_month(dialog_manager: DialogManager, event_f
     admin_id = dialog_manager.dialog_data.get('admin_id')
     if not admin_id:
         user = await user_is_register(session, event_from_user.id)
-        admin_id = user.admin_id
+        admin_ids = dialog_manager.middleware_data.get('admin_ids')
+        if user.admin_id in admin_ids:
+            admin_id = user.telegram_id
+        else:
+            admin_id = user.admin_id
         dialog_manager.dialog_data.update({'admin_id': admin_id})
         # проверка на админку через кв бакет
 

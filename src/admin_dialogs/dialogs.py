@@ -5,13 +5,14 @@ from aiogram_dialog.widgets.input import TextInput
 from aiogram_dialog.widgets.kbd import Button, Row, Back, Next, Select, Group, Cancel, SwitchTo
 from aiogram_dialog.widgets.text import Const, Format, List
 # импорт состояний
-from src.fsm.admin_states import AdminMenuSG, AdminEditCalendary, AllAppointments, Dispatch, Pcode
+from src.fsm.admin_states import (AdminMenuSG, AdminEditCalendary, AllAppointments, Dispatch, Pcode, AllAdmins)
 # импорт сервисных функций-билдеров
 from src.services.widget_builder_for_dialogs import get_weekday_button, get_group
 # импорт всех геттеров
 from src.admin_dialogs.getters import (get_admin_menu, get_free_dates_on_next_month, get_free_dates_on_current_month,
                                        get_free_times_from_date, slot_info_for_user, get_all_slots, get_dispatch_text,
-                                       get_pcode_from_db, get_pcode_from_dialog, get_admin_role)
+                                       get_pcode_from_db, get_pcode_from_dialog, get_admin_role, get_all_admins,
+                                       get_admin_data)
 # хэндлеры для редактирования расписания
 from src.admin_dialogs.handlers import admin_choose_date_for_edit, admin_choose_time_slot_for_edit, admin_close_slot
 # хэндлеры для селектора (главное меню)
@@ -22,6 +23,8 @@ from src.admin_dialogs.handlers import admin_choose_date_for_look
 from src.admin_dialogs.handlers import edit_dispatch, start_dispatch
 # хэндлеры для рефералок + промокодов
 from src.admin_dialogs.handlers import check_pcode, edit_pcode, confirm_pcode
+#
+from src.admin_dialogs.handlers import edit_admin_data, edit_sub_days
 
 '''
 Все диалоги бота для администратора
@@ -236,5 +239,45 @@ new_pcode = Dialog(
                id='cancel_button'),
         state=Pcode.error_pcode,
         getter=get_pcode_from_dialog
+    ),
+)
+
+all_admins = Dialog(
+    Window(
+        Format(text='Введите id администратора для управления.\n'
+                    'Список админов: \n'),
+        List(field=Format(
+            '<b>{item[username]}</b>\nid - {item[admin_id]}\nТелефон - {item[phone]}\nПодписка - {item[sub_days]}\n'),
+            items='admins'),
+        TextInput(
+            id='input_admin_id',
+            on_success=edit_admin_data
+        ),
+        Cancel(Const(text='☰ Главное меню'),
+               id='cancel_button'),
+        getter=get_all_admins,
+        state=AllAdmins.main_menu
+    ),
+    Window(
+        Format(text='Администратор: <b>{admin_data[admin_id]}</b>'),
+        Format(text='Дней подписки: <b>{admin_data[sub_days]}</b>'),
+        Next(Const(text='Изменить время подписки'), id='next_button'),
+        Back(Const(text='← Назад'),
+             id='b_button'),
+        getter=get_admin_data,
+        state=AllAdmins.edit_admin_data
+    ),
+    Window(
+        Format(text='Администратор: <b>{admin_data[admin_id]}</b>'),
+        Format(text='Дней подписки: <b>{admin_data[sub_days]}</b>\n'
+                    'Введите новое количество дней подписки.'),
+        TextInput(
+            id='input_sub_days',
+            on_success=edit_sub_days
+        ),
+        Back(Const(text='← Назад'),
+             id='b_button'),
+        getter=get_admin_data,
+        state=AllAdmins.edit_sub_days
     ),
 )
