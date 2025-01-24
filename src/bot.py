@@ -93,6 +93,7 @@ async def main() -> None:
     dp.include_router(admin_dg.dispatch_dialog)
     dp.include_router(admin_dg.new_pcode)
     dp.include_router(admin_dg.all_admins)
+    dp.include_router(admin_dg.admin_settings)
 
     # Подключаем роутеры для диалогов пользователей
     dp.include_router(user_dg.main_menu_dialog)

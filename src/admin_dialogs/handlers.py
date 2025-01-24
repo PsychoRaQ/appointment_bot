@@ -5,7 +5,7 @@ from aiogram_dialog.widgets.input import ManagedTextInput
 from aiogram_dialog.widgets.kbd import Select
 
 # состояния
-from src.fsm.admin_states import AdminEditCalendary, AllAppointments, Dispatch, Pcode, AllAdmins
+from src.fsm.admin_states import AdminEditCalendary, AllAppointments, Dispatch, Pcode, AllAdmins, AdminSettings
 from src.fsm.user_states import UserNewAppointmentSG, UserAppointmentSG
 # для рассылки
 from src.nats.publishers import send_dispatch
@@ -45,7 +45,7 @@ async def admin_dialog_selection(callback: CallbackQuery, widget: Select,
         case 'pcodes':
             await dialog_manager.start(state=Pcode.main_pcode)
         case 'admin_settings':
-            pass
+            await dialog_manager.start(state=AdminSettings.main_menu)
         # старшая админка
         case 'all_admins_list':
             await dialog_manager.start(state=AllAdmins.main_menu)
@@ -177,6 +177,13 @@ async def confirm_pcode(
 
 
 ###### УПРАВЛЕНИЕ АДМИНАМИ
+
+# проверка корректности id и кол-ва дней
+def correct_id(data: str):
+    if data.isdigit():
+        return data
+    raise ValueError
+
 
 # переходим в меню управления админом с указанным id
 async def edit_admin_data(message: Message,

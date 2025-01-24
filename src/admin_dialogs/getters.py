@@ -214,6 +214,8 @@ async def get_all_admins(dialog_manager: DialogManager, event_from_user: User, *
 # получение данных администратора по id
 async def get_admin_data(dialog_manager: DialogManager, event_from_user: User, **kwargs) -> dict:
     admin_id = dialog_manager.dialog_data.get('admin_id')
+    if not admin_id:
+        admin_id = event_from_user.id
     kv_storage = dialog_manager.middleware_data.get('subscribe_storage')
     data = await kv_storage.get(admin_id)
     sub_days = int(data.value.decode("utf-8"))
@@ -221,3 +223,9 @@ async def get_admin_data(dialog_manager: DialogManager, event_from_user: User, *
     admin_data = {'admin_id': admin_id, 'sub_days': sub_days}
 
     return {'admin_data': admin_data}
+
+
+# Геттер для окна обратной связи
+async def get_admin_feedback(dialog_manager: DialogManager, event_from_user: User, **kwargs) -> dict:
+    url = dialog_manager.middleware_data.get('admin_url')
+    return {'url': url}

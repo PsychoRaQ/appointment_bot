@@ -10,6 +10,7 @@ from aiogram.fsm.state import State, StatesGroup
 # Главное меню
 class AdminMenuSG(StatesGroup):
     admin_menu = State()  # окно с главным меню бота (админка)
+    unpaid_menu = State()  # окно с оплатой подписки
 
 
 # Изменение расписания
@@ -41,6 +42,12 @@ class Pcode(StatesGroup):
     confirm_pcode = State()  # подтверждение нового промокода
     pcode_edit_successfull = State()  # промокод успешно изменен
     error_pcode = State()  # ошибка в промокоде или он не уникальный
+
+
+# настройки админки
+class AdminSettings(StatesGroup):
+    main_menu = State()  # главное меню настроек
+    feedback = State()  # кнопка продления подписки
 
 
 # старшая админка

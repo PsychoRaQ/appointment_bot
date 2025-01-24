@@ -5,14 +5,15 @@ from aiogram_dialog.widgets.input import TextInput
 from aiogram_dialog.widgets.kbd import Button, Row, Back, Next, Select, Group, Cancel, SwitchTo
 from aiogram_dialog.widgets.text import Const, Format, List
 # импорт состояний
-from src.fsm.admin_states import (AdminMenuSG, AdminEditCalendary, AllAppointments, Dispatch, Pcode, AllAdmins)
+from src.fsm.admin_states import (AdminMenuSG, AdminEditCalendary, AllAppointments, Dispatch, Pcode, AllAdmins,
+                                  AdminSettings)
 # импорт сервисных функций-билдеров
 from src.services.widget_builder_for_dialogs import get_weekday_button, get_group
 # импорт всех геттеров
 from src.admin_dialogs.getters import (get_admin_menu, get_free_dates_on_next_month, get_free_dates_on_current_month,
                                        get_free_times_from_date, slot_info_for_user, get_all_slots, get_dispatch_text,
                                        get_pcode_from_db, get_pcode_from_dialog, get_admin_role, get_all_admins,
-                                       get_admin_data)
+                                       get_admin_data, get_admin_feedback)
 # хэндлеры для редактирования расписания
 from src.admin_dialogs.handlers import admin_choose_date_for_edit, admin_choose_time_slot_for_edit, admin_close_slot
 # хэндлеры для селектора (главное меню)
@@ -23,8 +24,8 @@ from src.admin_dialogs.handlers import admin_choose_date_for_look
 from src.admin_dialogs.handlers import edit_dispatch, start_dispatch
 # хэндлеры для рефералок + промокодов
 from src.admin_dialogs.handlers import check_pcode, edit_pcode, confirm_pcode
-#
-from src.admin_dialogs.handlers import edit_admin_data, edit_sub_days
+# различный функционал
+from src.admin_dialogs.handlers import edit_admin_data, edit_sub_days, correct_id
 
 '''
 Все диалоги бота для администратора
@@ -57,10 +58,18 @@ main_menu_dialog = Dialog(
             width=1,
             when=F['user_role'] == 'grand_admin'
         ),
-        Button(Const(text='Оплатить подписку'), id='pay_btn',
-               when=F['user_role'] == 'admin' and F['subscribe'] == 'unpaid'),
+        Next(Const(text='Продлить подписку'), id='pay_btn',
+             when=F['user_role'] == 'admin' and F['subscribe'] == 'unpaid'),
         state=AdminMenuSG.admin_menu,
         getter=get_admin_menu
+    ),
+    Window(
+        Format(text='Для продления подписки напишите администратору:'),
+        Format(text='{url}'),
+        Back(Const(text='← Назад'),
+             id='b_button'),
+        state=AdminMenuSG.unpaid_menu,
+        getter=get_admin_feedback,
     ),
     getter=get_admin_role
 )
@@ -242,6 +251,7 @@ new_pcode = Dialog(
     ),
 )
 
+# список всех админов
 all_admins = Dialog(
     Window(
         Format(text='Введите id администратора для управления.\n'
@@ -251,6 +261,7 @@ all_admins = Dialog(
             items='admins'),
         TextInput(
             id='input_admin_id',
+            type_factory=correct_id,
             on_success=edit_admin_data
         ),
         Cancel(Const(text='☰ Главное меню'),
@@ -273,11 +284,32 @@ all_admins = Dialog(
                     'Введите новое количество дней подписки.'),
         TextInput(
             id='input_sub_days',
+            type_factory=correct_id,
             on_success=edit_sub_days
         ),
         Back(Const(text='← Назад'),
              id='b_button'),
         getter=get_admin_data,
         state=AllAdmins.edit_sub_days
+    ),
+)
+# настройки админки
+admin_settings = Dialog(
+    Window(
+        Format(text='Настройки админки:\n\n'
+                    'Ваша подписка заканчивается через {admin_data[sub_days]} дней.'),
+        Next(Const(text='Продлить подписку'), id='next_button'),
+        Cancel(Const(text='☰ Главное меню'),
+               id='cancel_button'),
+        getter=get_admin_data,
+        state=AdminSettings.main_menu
+    ),
+    Window(
+        Format(text='Для продления подписки напишите администратору:'),
+        Format(text='{url}'),
+        Back(Const(text='← Назад'),
+             id='b_button'),
+        state=AdminSettings.feedback,
+        getter=get_admin_feedback,
     ),
 )
