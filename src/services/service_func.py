@@ -107,11 +107,14 @@ async def create_admin_date_list(month, session, admin_id) -> list:
 
 
 # создание списка временных слотов для изменения админом
-async def create_time_slots(start, stop):
+async def create_time_slots(start, stop, minute):
     result = []
     for i in range(start, stop + 1):
         result.append(datetime.time(i))
-        result.append(datetime.time(i, 30))
+        counter = minute
+        while counter < 60:
+            result.append(datetime.time(i, counter))
+            counter += minute
 
     result = [(f'{datetime.time.strftime(time, '%H:%M')} ❌', time) for time in result]
     return result

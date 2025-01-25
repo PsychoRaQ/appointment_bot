@@ -1,8 +1,10 @@
 # аиограм
+import operator
+
 from aiogram import F
 from aiogram_dialog import Dialog, Window
 from aiogram_dialog.widgets.input import TextInput
-from aiogram_dialog.widgets.kbd import Button, Row, Back, Next, Select, Group, Cancel, SwitchTo
+from aiogram_dialog.widgets.kbd import Button, Row, Back, Next, Select, Group, Cancel, SwitchTo, Radio
 from aiogram_dialog.widgets.text import Const, Format, List
 # импорт состояний
 from src.fsm.admin_states import (AdminMenuSG, AdminEditCalendary, AllAppointments, Dispatch, Pcode, AllAdmins,
@@ -105,6 +107,15 @@ edit_calendary = Dialog(
     Window(
         Format(text='Изменение временных слотов на {text_date}:'),
         get_group(admin_choose_time_slot_for_edit, 'time'),  # group, отображение слотов
+        Row(
+            Radio(
+                checked_text=Format('🔘 {item[0]}'),
+                unchecked_text=Format('⚪️ {item[0]}'),
+                id='radio_times',
+                item_id_getter=operator.itemgetter(1),
+                items="slot_times",
+            ),
+        ),
         SwitchTo(Const(text='← Назад'), id='b_button', state=AdminEditCalendary.first_month),
         Cancel(Const(text='☰ Главное меню'), id='cancel_button'),
         getter=get_free_times_from_date,

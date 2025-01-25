@@ -82,6 +82,16 @@ async def get_free_dates_on_next_month(session: AsyncSession, event_from_user: U
 
 # Геттер для отображения слотов на выбранную дату
 async def get_free_times_from_date(dialog_manager: DialogManager, event_from_user: User, **kwargs) -> dict:
+    checked = dialog_manager.find('radio_times').get_checked()
+    slot_times = {
+        # '1': 5,
+        # '2': 10,
+        '3': 15,
+        '4': 20,
+        '5': 30,
+    }
+    chosen_time = slot_times['5' if not checked else checked]
+
     text_date = dialog_manager.dialog_data.get('date')
     if text_date == 'locked':
         return {}
@@ -91,7 +101,7 @@ async def get_free_times_from_date(dialog_manager: DialogManager, event_from_use
 
     admin_id = event_from_user.id
     times_scalar = await get_slots_list_from_db(date, admin_id, session)
-    slots = await create_time_slots(6, 23)
+    slots = await create_time_slots(6, 23, chosen_time)
 
     result_text = []
     result_data = []
@@ -110,7 +120,18 @@ async def get_free_times_from_date(dialog_manager: DialogManager, event_from_use
                 result_text[index] = f'{datetime.time.strftime(i.time, '%H:%M')} 👩'
                 result_data[index] = i.time
     result = list(zip(result_text, result_data))
-    return {'open_time': result, 'date': date, 'text_date': text_date}
+    if len(result) > 60:
+        result_1 = result[0:61]
+        result_2 = result[61:]
+
+    slot_times = [
+        # (':05', '1'),
+        # (':10', '2'),
+        (':15', '3'),
+        (':20', '4'),
+        (':30', '5'),
+    ]
+    return {'open_time': result, 'date': date, 'text_date': text_date, 'slot_times': slot_times}
 
 
 # Геттер для инфы о занятом слоте который пытается закрыть админ
@@ -142,13 +163,12 @@ async def get_all_slots(dialog_manager: DialogManager, event_from_user: User, **
     result = []
     admin_id = event_from_user.id
     slots = await get_slots_list_from_db(date, admin_id, session)
-    admin_ids = dialog_manager.middleware_data.get('admin_ids')
     if slots:
         for slot in slots:
             time = f'{datetime.time.strftime(slot.time, '%H:%M')}'
             if slot.user_id == 0:
                 result.append(f'{time} - Свободно')
-            elif slot.user_id in admin_ids:
+            elif slot.user_id == admin_id:
                 comment = slot.comment
                 result.append(f'{time} - Ручная запись - {comment}')
             else:

@@ -66,7 +66,9 @@ class SubscribeConsumer:
             if days > 0:
                 data = bytes(str(days - 1), encoding="utf-8")
                 await self.kv_storage.put(user_id, data)
-                await msg.nak(delay=3600)
+                sec = 3600
+                hour = 24
+                await msg.nak(delay=hour * sec)
             else:
                 await self.bot.send_message(user_id,
                                             f'Уважаемый администратор, Ваша подписка была приостановлена.\n'

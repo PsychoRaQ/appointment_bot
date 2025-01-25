@@ -227,7 +227,7 @@ user_new_appointment_dialog = Dialog(
     ),
     Window(Format(text='Произошла ошибка во время записи на {date} - {time}!\n'
                        'Возможно, выбранное время уже занято.\n'
-                       'Пожалуйста, попробуйте позже или выберите другое время.'),
+                       'Пожалуйста, попробуйте еще раз или выберите другое время.'),
            Cancel(Const(text='☰ Главное меню'), id='cancel_button'),
            state=UserNewAppointmentSG.error_confirm,
            getter=get_confirm_datetime,

@@ -173,10 +173,11 @@ async def user_new_time_appointment(callback: CallbackQuery, widget: Select,
                                     dialog_manager: DialogManager, data: str):
     if data:
         await dialog_manager.update({'time': data})
-        if callback.message.chat.id in dialog_manager.middleware_data.get('admin_ids'):
+        role = dialog_manager.middleware_data.get('user_role')
+        if role == 'admin':
             await dialog_manager.switch_to(state=UserNewAppointmentSG.write_admin_comment)
         else:
-            session = dialog_manager.middleware_data['session']
+            session = dialog_manager.middleware_data.get('session')
             status = 'confirm'
             date, text_date, time, text_time = await datetime_format(date=dialog_manager.dialog_data.get('date'),
                                                                      time=data)
@@ -188,7 +189,6 @@ async def user_new_time_appointment(callback: CallbackQuery, widget: Select,
             time_to_send_notification = datetime.datetime.combine(date, time)
 
             delay = int((time_to_send_notification - timestamp).total_seconds()) - 3600 * 24
-            delay = 10  # для теста - убрать в проде
 
             js = dialog_manager.middleware_data.get('js')
             subject = dialog_manager.middleware_data.get('delay_del_subject')
@@ -224,7 +224,11 @@ async def user_delete_appointment(callback: CallbackQuery, widget: Select,
     date = date.replace('.', '-')
     date, text_date, time, text_time = await datetime_format(date, time)
     session = dialog_manager.middleware_data['session']
-    admin_id = dialog_manager.dialog_data.get('admin_id')
+    role = dialog_manager.middleware_data.get('user_role')
+    if role == 'admin':
+        admin_id = callback.message.chat.id
+    else:
+        admin_id = dialog_manager.dialog_data.get('admin_id')
     slot = await get_slot_from_db(date, time, admin_id, session)
     comment = slot.comment
     await dialog_manager.update(
@@ -242,7 +246,11 @@ async def user_is_confirm_delete_appointment(callback: CallbackQuery, widget: Se
     text_date = dialog_manager.dialog_data.get('text_date')
     text_time = dialog_manager.dialog_data.get('text_time')
     date, text_date, time, text_time = await datetime_format(text_date, text_time)
-    admin_id = dialog_manager.dialog_data.get('admin_id')
+    role = dialog_manager.middleware_data.get('user_role')
+    if role == 'admin':
+        admin_id = callback.message.chat.id
+    else:
+        admin_id = dialog_manager.dialog_data.get('admin_id')
 
     status = 'delete'
     # отправляем в кв бакет состояние слота (отмена уведомления)
@@ -252,12 +260,13 @@ async def user_is_confirm_delete_appointment(callback: CallbackQuery, widget: Se
 
     user = await user_is_register(session, user_id)
     bot = dialog_manager.middleware_data['bot']
-    try:
-        await bot.send_message(admin_id,
-                               f'Пользователь {user.username} отменил свою запись {text_date} - {text_time}\n'
-                               f'Телефон: {user.phone}')
-    except:
-        pass
+    if role == 'user':
+        try:
+            await bot.send_message(admin_id,
+                                   f'Пользователь {user.username} отменил свою запись {text_date} - {text_time}\n'
+                                   f'Телефон: {user.phone}')
+        except:
+            pass
 
     await user_confirm_datetime(user_id, date, time, status, admin_id, session)
     await dialog_manager.next(show_mode=ShowMode.EDIT)
@@ -267,12 +276,13 @@ async def user_is_confirm_delete_appointment(callback: CallbackQuery, widget: Se
 
 async def new_appointment_from_admin(callback: CallbackQuery, widget: Select,
                                      dialog_manager: DialogManager):
-    session = dialog_manager.middleware_data['session']
+    session = dialog_manager.middleware_data.get('session')
     status = 'confirm'
     date, text_date, time, text_time = await datetime_format(date=dialog_manager.dialog_data.get('date'),
                                                              time=dialog_manager.dialog_data.get('time'))
     comment = dialog_manager.dialog_data.get('comment')
-    result = await user_confirm_datetime(callback.message.chat.id, date, time, status, session, comment)
+    admin_id = callback.message.chat.id
+    result = await user_confirm_datetime(admin_id, date, time, status, admin_id, session, comment)
     if result:
         await dialog_manager.switch_to(state=UserNewAppointmentSG.confirm_admin_datetime)
     else:
