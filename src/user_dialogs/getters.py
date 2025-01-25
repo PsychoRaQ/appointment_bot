@@ -37,7 +37,7 @@ async def get_main_menu(**kwargs) -> dict:
     main_menu = [
         ('Записаться 🖊️', 'new_appointment'),
         ('Мои записи 📖', 'my_appointment'),
-        ('Помощь ❓', 'help'),
+        # ('Помощь ❓', 'help'),
         ('Обратная связь 💬', 'feedback'),
     ]
     return {'main_menu': main_menu}
@@ -51,11 +51,7 @@ async def get_help_menu(dialog_manager: DialogManager, **kwargs) -> dict:
 
 # Геттер для окна обратной связи
 async def get_feedback(dialog_manager: DialogManager, event_from_user: User, **kwargs) -> dict:
-    user_id = event_from_user.id
-    session = dialog_manager.middleware_data['session']
-    user = await user_is_register(session, user_id)
-    admin_id = user.admin_id
-    admin_url = 123
+    admin_url = dialog_manager.middleware_data.get('admin_url')
     return {'url': admin_url}
 
 
