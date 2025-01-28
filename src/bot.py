@@ -12,10 +12,13 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 # диалоги для подключения
 from admin_dialogs import dialogs as admin_dg
-from user_dialogs import dialogs as user_dg
+
+from dialogs import user_dialogs as user_dg
+# from user_dialogs import dialogs as user_dg
+
 # конфигурация бота
 from config_data.config import load_config, load_database, load_nats
-# хэндлеры сообщений
+# хэндлеры для команд
 from handlers import user_handlers, unregister_handlers, admin_handlers
 # мидлвари
 from middlewares.session import DbSessionMiddleware
@@ -26,7 +29,7 @@ from src.services.database_func import get_all_users_from_db
 from src.services.service_func import set_main_menu
 # натс
 from src.nats.nats_connect import connect_to_nats
-from src.services.start_consumers import (start_delayed_consumer, start_dispatch_consumer, start_subscribe_consumer)
+from src.services.start_consumers import start_delayed_consumer, start_dispatch_consumer, start_subscribe_consumer
 
 
 async def main() -> None:
@@ -96,12 +99,10 @@ async def main() -> None:
     dp.include_router(admin_dg.admin_settings)
 
     # Подключаем роутеры для диалогов пользователей
+    dp.include_router(user_dg.registration_dialog)
     dp.include_router(user_dg.main_menu_dialog)
-    dp.include_router(user_dg.start_dialog)
-    dp.include_router(user_dg.user_appointment_dialog)
-    dp.include_router(user_dg.user_new_appointment_dialog)
-    dp.include_router(user_dg.help_description_dialog)
-    dp.include_router(user_dg.feedback_dialog)
+    dp.include_router(user_dg.make_appointment_dialog)
+    dp.include_router(user_dg.view_user_appointments_dialog)
 
     # Подключаем диалоги
     setup_dialogs(dp)
