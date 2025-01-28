@@ -22,6 +22,7 @@ async def user_dialog_selection(callback: CallbackQuery, widget: Select,
                                                           callback.message.chat.id)
             if result or callback.message.chat.id in dialog_manager.middleware_data.get('admin_ids'):
                 await dialog_manager.start(state=UserNewAppointmentSG.calendary_first_month)
+                dialog_manager.dialog_data.update({'for_admin': False})
             else:
                 await dialog_manager.start(state=UserNewAppointmentSG.user_max_appointment)
         # просмотр всех существующих записей пользователя

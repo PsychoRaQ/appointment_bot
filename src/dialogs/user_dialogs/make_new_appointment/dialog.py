@@ -33,7 +33,7 @@ from src.dialogs.user_dialogs.make_new_appointment.handlers import (choose_time_
 make_appointment_dialog = Dialog(
     # отображение календаря с датами на текущий месяц
     Window(
-        Const(text='Выберите дату для записи: '),
+        Const(text='Выберите дату для записи:'),
         Button(Format(text='{current_month}'),
                id='month', ),
         Row(*get_weekday_button()),  # дни недели
@@ -47,7 +47,7 @@ make_appointment_dialog = Dialog(
     ),
     # отображение календаря с датами на следующий месяц
     Window(
-        Const(text='Выберите дату для записи:  '),
+        Const(text='Выберите дату для записи:'),
         Button(Format(text='{next_month}'),
                id='month', ),
         Row(*get_weekday_button()),  # дни недели

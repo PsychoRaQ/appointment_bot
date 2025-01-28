@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.services.database_func import (get_slots_list_from_db, get_slot_from_db, user_is_register, get_admin_pcode,
                                         get_all_admins_from_db)
 # сервисные функции
-from src.services.service_func import create_admin_date_list, create_time_slots, datetime_format
+from src.services.service_func import create_date_list, create_time_slots, datetime_format
 
 '''
 Геттеры для диалогов (админка)

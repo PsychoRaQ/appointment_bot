@@ -29,8 +29,10 @@ async def admin_dialog_selection(callback: CallbackQuery, widget: Select,
     match data:
         case 'edit_calendary':
             await dialog_manager.start(state=AdminEditCalendary.first_month)
+            dialog_manager.dialog_data.update({'for_admin': True})
         case 'add_user_appointment':
             await dialog_manager.start(state=UserNewAppointmentSG.calendary_first_month)
+            dialog_manager.dialog_data.update({'for_admin': False})
         case 'delete_admin_appointment':
             result = await get_slot_with_user_id(dialog_manager.middleware_data['session'],
                                                  callback.message.chat.id)

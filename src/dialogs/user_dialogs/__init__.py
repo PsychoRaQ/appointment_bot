@@ -8,5 +8,4 @@ __all__ = [
     'main_menu_dialog',
     'make_appointment_dialog',
     'view_user_appointments_dialog',
-
 ]

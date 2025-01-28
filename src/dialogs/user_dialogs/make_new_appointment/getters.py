@@ -33,7 +33,8 @@ async def get_free_dates(dialog_manager: DialogManager, event_from_user: User, s
     next_month = current_month + 1 if current_month != 12 else current_month - 12 + 1
 
     # создаем список с датами на текущий месяц
-    current_month_dates = await create_date_list(current_month, session, 'current', admin_id)
+    for_admin = await dialog_manager.dialog_data.get('for_admin')
+    current_month_dates = await create_date_list(current_month, session, 'current', for_admin, admin_id)
     first_weekday_on_current_month = datetime(datetime.today().year, datetime.today().month,
                                               1).weekday() + datetime.today().day - 1
     for _ in range(first_weekday_on_current_month):
@@ -42,7 +43,7 @@ async def get_free_dates(dialog_manager: DialogManager, event_from_user: User, s
         current_month_dates.append((' ', 'locked'))
 
     # создаем список с датами на следующий месяц
-    next_month_dates = await create_date_list(next_month, session, 'next', admin_id)
+    next_month_dates = await create_date_list(next_month, session, 'next', for_admin, admin_id)
     first_weekday_on_next_month = datetime(datetime.today().year, next_month, 1).weekday()
     for _ in range(first_weekday_on_next_month):
         next_month_dates.insert(0, (' ', 'locked'))
