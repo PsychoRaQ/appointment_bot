@@ -19,9 +19,9 @@ async def admin_dialog_selection(callback: CallbackQuery, widget: Select,
                                  dialog_manager: DialogManager, data: str):
     match data:
         case 'edit_calendary':
-            await dialog_manager.start(state=AdminEditCalendary.first_month)
+            await dialog_manager.start(state=AdminEditCalendary.first_month, data={'for_admin': True})
         case 'make_new_appointment':
-            await dialog_manager.start(state=UserNewAppointmentSG.calendary_first_month)
+            await dialog_manager.start(state=UserNewAppointmentSG.calendary_first_month, data={'for_admin': False})
         case 'delete_admin_appointment':
             result = await get_slot_with_user_id(dialog_manager.middleware_data['session'],
                                                  callback.message.chat.id)
@@ -30,7 +30,7 @@ async def admin_dialog_selection(callback: CallbackQuery, widget: Select,
             else:
                 await dialog_manager.start(state=UserAppointmentSG.delete_appointment_datetime)
         case 'view_all_appointments':
-            await dialog_manager.start(state=AllAppointments.first_month)
+            await dialog_manager.start(state=AllAppointments.first_month, data={'for_admin': True})
         case 'mass_dispatch':
             await dialog_manager.start(state=Dispatch.edit_dispatch)
         case 'admin_invite':

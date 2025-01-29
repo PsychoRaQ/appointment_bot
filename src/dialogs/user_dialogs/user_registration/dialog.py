@@ -44,7 +44,7 @@ registration_dialog = Dialog(
     # окно при корректном вводе промокода или переходе по актуальной ссылке
     Window(
         Const('Добро пожаловать!\nПеред тем как записаться, нужно пройти регистрацию'),
-        Next(Const('Зарегистрироваться'), id='b_next'),
+        Next(Const('Зарегистрироваться')),
         state=StartSG.start_with_pcode
     ),
     # окно ввода никнейма
@@ -58,8 +58,8 @@ registration_dialog = Dialog(
             on_error=error_input,
         ),
         Row(
-            Back(Const('← Назад'), id='b_back'),
-            Next(Const('Продолжить →'), id='b_next'),
+            Back(Const('← Назад')),
+            Next(Const('Продолжить →')),
         ),
         state=StartSG.get_name,
     ),
@@ -73,14 +73,14 @@ registration_dialog = Dialog(
             on_success=correct_input,
             on_error=error_input,
         ),
-        Back(Const('← Назад'), id='b_back'),
+        Back(Const('← Назад')),
         state=StartSG.get_phone
     ),
     # окно подтверждения введенных данных
     # при подтверждении - пользователь вносится в базу данных
     Window(
         Format('Пожалуйста, проверьте Ваши данные.\nИмя: {username}\nТелефон: {phone}\n\nВсе верно?'),
-        Cancel(Const('Пройти регистрацию сначала'), id='b_cancel'),
+        Cancel(Const('Пройти регистрацию сначала')),
         Button(Const('Подтвердить регистрацию'), id='b_confirm', on_click=confirm_registration),
         state=StartSG.confirm
     ),

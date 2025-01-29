@@ -28,10 +28,8 @@ view_user_appointments_dialog = Dialog(
         Const(text='Ваши записи:\n'),
         List(field=Format('{item[0]} - {item[1]}'),
              items='user_appointment'),
-        Next(Const(text='Отменить запись'),
-             id='b_next'),
-        Cancel(Const(text='← Назад'),
-               id='b_cancel'),
+        Next(Const(text='Отменить запись')),
+        Cancel(Const(text='← Назад')),
         state=UserAppointmentSG.main,
     ),
     # окно выбора записи пользователя для отмены
@@ -47,10 +45,8 @@ view_user_appointments_dialog = Dialog(
             ),
             width=1,
         ),
-        Back(Const(text='← Назад'),
-             id='b_back', when=~F['is_admin']),
-        Cancel(Const(text='← Назад'),
-               id='b_cancel', when=F['is_admin']),
+        Back(Const(text='← Назад'), when=~F['is_admin']),
+        Cancel(Const(text='← Назад'), when=F['is_admin']),
         state=UserAppointmentSG.delete_appointment_datetime,
     ),
     # окно подтверждения отмены записи пользователя
@@ -60,15 +56,13 @@ view_user_appointments_dialog = Dialog(
         Format(text='Вы точно хотите отменить ручную запись на {text_date} - {text_time} ?\n'
                     'Комментарий: {comment}', when=F['is_admin']),
         Button(text=Const('Подтвердить отмену'), id='b_delete', on_click=user_is_confirmed_delete_appointment),
-        Back(Const(text='← Назад'),
-             id='back_button'),
+        Back(Const(text='← Назад')),
         state=UserAppointmentSG.delete_appointment_confirm,
     ),
     # окно успешной отмены записи
     Window(
         Format(text='Ваша запись на {text_date} - {text_time} была отменена.'),
-        Cancel(Const(text='☰ Главное меню'),
-               id='b_back'),
+        Cancel(Const(text='☰ Главное меню')),
         state=UserAppointmentSG.delete_appointment_result,
     ),
     # окно, если нет доступных записей
@@ -79,8 +73,7 @@ view_user_appointments_dialog = Dialog(
         Const(
             text='Записи не найдены.\nЧтобы вручную записать человека, нажмите кнопку "Записать пользователя" в главном меню бота.',
             when=F['is_admin']),
-        Cancel(Const(text='☰ Главное меню'),
-               id='b_cancel'),
+        Cancel(Const(text='☰ Главное меню')),
         state=UserAppointmentSG.no_one_appointment,
     ),
     getter=get_user_appointments,

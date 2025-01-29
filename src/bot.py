@@ -11,11 +11,8 @@ from aiogram_dialog import setup_dialogs
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 # диалоги для подключения
-from admin_dialogs import dialogs as admin_dg
-
+from dialogs import admin_dialogs as admin_dg
 from dialogs import user_dialogs as user_dg
-# from user_dialogs import dialogs as user_dg
-
 # конфигурация бота
 from config_data.config import load_config, load_database, load_nats
 # хэндлеры для команд
@@ -91,12 +88,12 @@ async def main() -> None:
 
     # Подключаем роутеры для диалогов админки
     dp.include_router(admin_dg.main_menu_dialog)
-    dp.include_router(admin_dg.edit_calendary)
-    dp.include_router(admin_dg.all_appointments)
-    dp.include_router(admin_dg.dispatch_dialog)
-    dp.include_router(admin_dg.new_pcode)
-    dp.include_router(admin_dg.all_admins)
-    dp.include_router(admin_dg.admin_settings)
+    dp.include_router(admin_dg.edit_calendary_dialog)
+    dp.include_router(admin_dg.view_all_appointments_dialog)
+    dp.include_router(admin_dg.mass_dispatch_dialog)
+    dp.include_router(admin_dg.admin_invite_dialog)
+    dp.include_router(admin_dg.view_all_admins_dialog)
+    dp.include_router(admin_dg.admin_settings_dialog)
 
     # Подключаем роутеры для диалогов пользователей
     dp.include_router(user_dg.registration_dialog)

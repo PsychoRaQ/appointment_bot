@@ -39,30 +39,24 @@ edit_calendary_dialog = Dialog(
     # отображение календаря на текущий месяц
     Window(
         Const(text='Выберите дату для изменения расписания:'),
-        Button(Format(text='{current_month}'),
-               id='month', ),
+        Button(Format(text='{current_month}'), id='month'),
         Row(*get_weekday_button()),
-        get_group(admin_choose_date_for_edit, 'date'),  # group, основная часть календаря
-        Next(Format(text='{next_month}   →'),
-             id='b_next'),
-        Cancel(Const(text='☰ Главное меню'),
-               id='b_cancel'),
+        get_group(admin_choose_date_for_edit, 'date', 'current_month'),  # group, основная часть календаря
+        Next(Format(text='{next_month}   →')),
+        Cancel(Const(text='☰ Главное меню')),
         getter=get_free_dates,
         state=AdminEditCalendary.first_month
     ),
     # отображение календаря на следующий месяц
     Window(
         Const(text='Выберите дату для изменения расписания:'),
-        Button(Format(text='{next_month}'),
-               id='month', ),
+        Button(Format(text='{next_month}'), id='month', ),
         Row(*get_weekday_button()),
-        get_group(admin_choose_date_for_edit, 'date'),  # group, основная часть календаря
-        Back(Format(text='←   {current_month}'),
-             id='b_back'),
-        Cancel(Const(text='☰ Главное меню'),
-               id='b_cancel'),
+        get_group(admin_choose_date_for_edit, 'date', 'next_month'),  # group, основная часть календаря
+        Back(Format(text='←   {current_month}')),
+        Cancel(Const(text='☰ Главное меню')),
         getter=get_free_dates,
-        state=AdminEditCalendary.second_month,
+        state=AdminEditCalendary.second_month
     ),
     # окно выбора временных "слотов" для изменения их доступности
     Window(
@@ -79,7 +73,7 @@ edit_calendary_dialog = Dialog(
             ),
         ),
         SwitchTo(Const(text='← Назад'), id='b_back', state=AdminEditCalendary.first_month),
-        Cancel(Const(text='☰ Главное меню'), id='b_cancel'),
+        Cancel(Const(text='☰ Главное меню')),
         getter=get_free_times_from_date,
         state=AdminEditCalendary.choose_time,
     ),

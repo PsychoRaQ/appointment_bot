@@ -32,8 +32,9 @@ async def get_free_dates(dialog_manager: DialogManager, event_from_user: User, s
     current_month = date.today().month
     next_month = current_month + 1 if current_month != 12 else current_month - 12 + 1
 
+    # получаем стартовый параметр из контекста (для кого генерируем календарь)
+    for_admin = dialog_manager.middleware_data.get('aiogd_context').start_data.get('for_admin')
     # создаем список с датами на текущий месяц
-    for_admin = await dialog_manager.dialog_data.get('for_admin')
     current_month_dates = await create_date_list(current_month, session, 'current', for_admin, admin_id)
     first_weekday_on_current_month = datetime(datetime.today().year, datetime.today().month,
                                               1).weekday() + datetime.today().day - 1

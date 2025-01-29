@@ -34,28 +34,22 @@ make_appointment_dialog = Dialog(
     # отображение календаря с датами на текущий месяц
     Window(
         Const(text='Выберите дату для записи:'),
-        Button(Format(text='{current_month}'),
-               id='month', ),
+        Button(Format(text='{current_month}'), id='month'),
         Row(*get_weekday_button()),  # дни недели
         get_group(choose_date_for_appointment, 'date', 'current_month'),  # group, основная часть календаря
-        Next(Format(text='{next_month}   →'),
-             id='b_next'),
-        Cancel(Const(text='☰ Главное меню'),
-               id='cancel_button'),
+        Next(Format(text='{next_month}   →')),
+        Cancel(Const(text='☰ Главное меню')),
         getter=get_free_dates,
         state=UserNewAppointmentSG.calendary_first_month
     ),
     # отображение календаря с датами на следующий месяц
     Window(
         Const(text='Выберите дату для записи:'),
-        Button(Format(text='{next_month}'),
-               id='month', ),
+        Button(Format(text='{next_month}'), id='month'),
         Row(*get_weekday_button()),  # дни недели
         get_group(choose_date_for_appointment, 'date', 'next_month'),  # group, основная часть календаря
-        Back(Format(text='←   {current_month}'),
-             id='b_back'),
-        Cancel(Const(text='☰ Главное меню'),
-               id='cancel_button'),
+        Back(Format(text='←   {current_month}')),
+        Cancel(Const(text='☰ Главное меню')),
         getter=get_free_dates,
         state=UserNewAppointmentSG.calendary_second_month,
     ),
@@ -72,7 +66,7 @@ make_appointment_dialog = Dialog(
     Window(
         Format(text='Вы успешно записались на {date} - {time}!\n\n'
                     'Чтобы посмотреть список своих записей или отменить запись, выберите пункт "Мои записи" в главном меню.'),
-        Cancel(Const(text='☰ Главное меню'), id='b_cancel'),
+        Cancel(Const(text='☰ Главное меню')),
         state=UserNewAppointmentSG.confirm_datetime,
         getter=get_confirm_datetime,
     ),
@@ -82,7 +76,7 @@ make_appointment_dialog = Dialog(
         Format(text='Произошла ошибка во время записи на {date} - {time}!\n'
                     'Возможно, выбранное время уже занято.\n'
                     'Пожалуйста, попробуйте еще раз или выберите другое время.'),
-        Cancel(Const(text='☰ Главное меню'), id='b_cancel'),
+        Cancel(Const(text='☰ Главное меню')),
         state=UserNewAppointmentSG.error_confirm,
         getter=get_confirm_datetime,
     ),
@@ -91,8 +85,7 @@ make_appointment_dialog = Dialog(
         Const(
             text='Вы записаны максимальное количество раз.\nЧтобы изменить время записи, пожалуйста, отмените одну из Ваших записей.\n\n'
                  '(Мои записи -> отменить запись)'),
-        Cancel(Const(text='☰ Главное меню'),
-               id='b_cancel'),
+        Cancel(Const(text='☰ Главное меню')),
         state=UserNewAppointmentSG.user_max_appointment,
     ),
     # Окно для написания комментария при записи
@@ -118,7 +111,7 @@ make_appointment_dialog = Dialog(
                     'Время: {time}\n'
                     'Комментарий администратора: {comment}\n\n'),
         Button(Const('Подтвердить запись'), id='b_confirm', on_click=make_admin_comment),
-        Back(Const(text='Назад'), id='b_back'),
+        Back(Const(text='Назад')),
         state=UserNewAppointmentSG.admin_confirmed_new_appointment,
         getter=get_confirm_datetime,
     ),
@@ -127,7 +120,7 @@ make_appointment_dialog = Dialog(
     Window(
         Format(text='Вы успешно создали запись {date} - {time}!\n'
                     'Комментарий: {comment}'),
-        Cancel(Const(text='☰ Главное меню'), id='b_cancel'),
+        Cancel(Const(text='☰ Главное меню')),
         state=UserNewAppointmentSG.confirm_admin_datetime,
         getter=get_confirm_datetime,
     ),
