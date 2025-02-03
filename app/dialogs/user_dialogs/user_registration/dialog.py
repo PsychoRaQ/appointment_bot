@@ -1,7 +1,7 @@
 # аиограм
 from aiogram_dialog import Dialog, Window
 from aiogram_dialog.widgets.input import TextInput
-from aiogram_dialog.widgets.kbd import Button, Row, Back, Next, Cancel
+from aiogram_dialog.widgets.kbd import Button, Row, Back, Next, SwitchTo
 from aiogram_dialog.widgets.text import Const, Format
 # состояния
 from app.fsm.user_states import StartSG
@@ -80,7 +80,7 @@ registration_dialog = Dialog(
     # при подтверждении - пользователь вносится в базу данных
     Window(
         Format('Пожалуйста, проверьте Ваши данные.\nИмя: {username}\nТелефон: {phone}\n\nВсе верно?'),
-        Cancel(Const('Пройти регистрацию сначала')),
+        SwitchTo(Const('Пройти регистрацию сначала'), id='b_cancel', state=StartSG.start),
         Button(Const('Подтвердить регистрацию'), id='b_confirm', on_click=confirm_registration),
         state=StartSG.confirm
     ),

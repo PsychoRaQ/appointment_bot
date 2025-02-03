@@ -1,6 +1,6 @@
 # аиограм
 from aiogram.types import Message
-from aiogram_dialog import DialogManager
+from aiogram_dialog import DialogManager, ShowMode
 from aiogram_dialog.widgets.input import ManagedTextInput
 # состояния
 from app.fsm.admin_states import AllAdmins
@@ -26,7 +26,7 @@ async def edit_admin_data(message: Message,
     admin_ids = [admin.telegram_id for admin in admins]
     if int(data) in admin_ids:
         dialog_manager.dialog_data.update({'admin_id': data})
-        await dialog_manager.next()
+        await dialog_manager.next(show_mode=ShowMode.AUTO)
     else:
         pass
 
@@ -40,4 +40,4 @@ async def edit_sub_days(message: Message,
     kv_storage = dialog_manager.middleware_data.get('subscribe_storage')
     days = int(data)
     await kv_storage.put(str(admin_id), bytes(str(days), encoding='utf-8'))
-    await dialog_manager.switch_to(AllAdmins.main_menu)
+    await dialog_manager.switch_to(AllAdmins.main_menu, show_mode=ShowMode.AUTO)

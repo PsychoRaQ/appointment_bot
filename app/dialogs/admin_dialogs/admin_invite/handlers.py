@@ -1,6 +1,6 @@
 # аиограм
 from aiogram.types import Message
-from aiogram_dialog import DialogManager
+from aiogram_dialog import DialogManager, ShowMode
 from aiogram_dialog.widgets.input import ManagedTextInput
 # состояния
 from app.fsm.admin_states import Pcode
@@ -22,7 +22,7 @@ async def edit_pcode(
         dialog_manager: DialogManager,
         data: str) -> None:
     dialog_manager.dialog_data.update({'pcode': data.upper()})
-    await dialog_manager.next()
+    await dialog_manager.next(show_mode=ShowMode.AUTO)
 
 
 # подтверждение изменения промокода (изменяем его в базе данных)
@@ -35,7 +35,7 @@ async def confirm_pcode(
     admin_id = message.from_user.id
     unique = await get_pcode_with_name(pcode, session)
     if unique:
-        await dialog_manager.switch_to(state=Pcode.error_pcode)
+        await dialog_manager.switch_to(state=Pcode.error_pcode, show_mode=ShowMode.AUTO)
     else:
         await edit_admin_pcode(admin_id, pcode, session)
-        await dialog_manager.next()
+        await dialog_manager.next(show_mode=ShowMode.AUTO)

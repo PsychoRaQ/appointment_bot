@@ -31,7 +31,7 @@ async def user_choose_slot_for_delete(callback: CallbackQuery, widget: Select,
     slot = await get_slot_from_db(date, time, admin_id, session)
     comment = slot.comment
     await dialog_manager.update({'text_date': text_date, 'text_time': text_time, 'comment': comment})
-    await dialog_manager.next(show_mode=ShowMode.EDIT)
+    await dialog_manager.next(show_mode=ShowMode.AUTO)
 
 
 # пользователь подтвердил отмену выбранного слота
@@ -65,4 +65,4 @@ async def user_is_confirmed_delete_appointment(callback: CallbackQuery, widget: 
         except Exception as e:
             print(e)
 
-    await dialog_manager.next(show_mode=ShowMode.EDIT)
+    await dialog_manager.next(show_mode=ShowMode.AUTO)

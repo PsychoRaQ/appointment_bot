@@ -20,7 +20,7 @@ async def choose_date_for_appointment(callback: CallbackQuery, widget: Select,
                                       dialog_manager: DialogManager, data: str):
     if data != 'locked':
         await dialog_manager.update({'date': data})
-        await dialog_manager.switch_to(state=UserNewAppointmentSG.choose_time)
+        await dialog_manager.switch_to(state=UserNewAppointmentSG.choose_time, show_mode=ShowMode.AUTO)
 
 
 # Пользователь выбрал время для записи
@@ -32,7 +32,7 @@ async def choose_time_for_appointment(callback: CallbackQuery, widget: Select,
         # если админ - переходим к написанию комментария
         role = dialog_manager.middleware_data.get('user_role')
         if role == 'admin':
-            await dialog_manager.switch_to(state=UserNewAppointmentSG.write_admin_comment)
+            await dialog_manager.switch_to(state=UserNewAppointmentSG.write_admin_comment, show_mode=ShowMode.AUTO)
         else:
             # пользователь занимает выбранный "слот"
             session = dialog_manager.middleware_data.get('session')
@@ -65,9 +65,9 @@ async def choose_time_for_appointment(callback: CallbackQuery, widget: Select,
             )
             # в зависимости от результата выполнения записи в базу, отображаем нужное окно диалога
             if result:
-                await dialog_manager.switch_to(state=UserNewAppointmentSG.confirm_datetime)
+                await dialog_manager.switch_to(state=UserNewAppointmentSG.confirm_datetime, show_mode=ShowMode.AUTO)
             else:
-                await dialog_manager.switch_to(state=UserNewAppointmentSG.error_confirm)
+                await dialog_manager.switch_to(state=UserNewAppointmentSG.error_confirm, show_mode=ShowMode.AUTO)
 
 
 # Подтверждение "ручной записи"
@@ -82,9 +82,9 @@ async def make_admin_comment(callback: CallbackQuery, widget: Select,
     # в зависимости от результата выполнения записи в базу, отображаем нужное окно диалога
     result = await user_confirm_datetime(admin_id, date, time, status, admin_id, session, comment)
     if result:
-        await dialog_manager.switch_to(state=UserNewAppointmentSG.confirm_admin_datetime)
+        await dialog_manager.switch_to(state=UserNewAppointmentSG.confirm_admin_datetime, show_mode=ShowMode.AUTO)
     else:
-        await dialog_manager.switch_to(state=UserNewAppointmentSG.error_confirm)
+        await dialog_manager.switch_to(state=UserNewAppointmentSG.error_confirm, show_mode=ShowMode.AUTO)
 
 
 # Админ ввел комментарий к "ручной записи"

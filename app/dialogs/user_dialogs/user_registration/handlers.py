@@ -9,7 +9,7 @@ from app.fsm.user_states import StartSG, MainMenuSG
 # паблишер для создания демо-подписки нового админа
 from app.services.nats_service.publishers.publishers import new_subscribe
 # функции для работы с базой данных
-from app.utils.database_func import (add_new_user, get_pcode_with_name, edit_admin_pcode)
+from app.utils.database_func import add_new_user, get_pcode_with_name, edit_admin_pcode
 # сервисные функции
 from app.utils.service_func import refactor_phone_number
 
@@ -18,13 +18,15 @@ from app.utils.service_func import refactor_phone_number
 async def confirm_registration(callback: CallbackQuery, button: Button, dialog_manager: DialogManager) -> None:
     # получаем нужные данные
     user_id = callback.message.chat.id
-    username = dialog_manager.dialog_data.get('username')
     phone = dialog_manager.dialog_data.get('phone')
     session = dialog_manager.middleware_data.get('session')
     admin_id = dialog_manager.dialog_data.get('admin_id')
     grand_admin_id = dialog_manager.middleware_data.get('admin_ids')
+    username = dialog_manager.dialog_data.get('username')
+    if username is None:
+        username = callback.message.chat.first_name
 
-    # проверяем id пригласившего алминистратора
+    # проверяем id пригласившего администратора
     # если пригласивший был старшим админом - регистрируем как администратора
     # если нет - регистрируем как пользователя и привязываем к пригласившему админу
     if admin_id in grand_admin_id:
@@ -44,7 +46,13 @@ async def confirm_registration(callback: CallbackQuery, button: Button, dialog_m
         next_state = MainMenuSG.main_menu
 
     await add_new_user(session, user_id, username, phone, admin_id, role)
-    await dialog_manager.start(state=next_state, mode=StartMode.RESET_STACK)
+
+    bot = dialog_manager.middleware_data.get('bot')
+
+    if role == 'admin':
+        await bot.send_message(user_id, 'Вы успешно зарегистрированы!\n '
+                                        'Если админка не открылась автоматически, пожалуйста, откройте её вручную в меню бота.')
+    await dialog_manager.start(state=next_state, mode=StartMode.RESET_STACK, show_mode=ShowMode.AUTO)
 
 
 # проверка наличия прромокода в базе данных
@@ -87,11 +95,11 @@ async def correct_input(
         widget: ManagedTextInput,
         dialog_manager: DialogManager,
         text: str) -> None:
-    if text.isalpha():
-        await dialog_manager.update({'username': text})
-    else:
+    if text.isdigit():
         phone = await refactor_phone_number(text)
         await dialog_manager.update({'phone': phone})
+    else:
+        await dialog_manager.update({'username': text})
     await dialog_manager.next(show_mode=ShowMode.EDIT)
 
 

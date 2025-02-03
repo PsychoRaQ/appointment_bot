@@ -20,9 +20,3 @@ class UserIsAdmin(BaseFilter):
     async def __call__(self, message, **data) -> bool:
         role = data.get('user_role')
         return role in ('admin', 'grand_admin')
-
-# no usage
-class UserIsGrandAdmin(BaseFilter):
-    async def __call__(self, message, **data) -> bool:
-        role = data.get('user_role')
-        return role in ('grand_admin')

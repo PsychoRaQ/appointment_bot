@@ -15,7 +15,7 @@ async def edit_dispatch_text(
         dialog_manager: DialogManager,
         text: str) -> None:
     await dialog_manager.update({'text': text})
-    await dialog_manager.next(show_mode=ShowMode.EDIT)
+    await dialog_manager.next(show_mode=ShowMode.AUTO)
 
 
 # запуск рассылки(получаем всех юзеров конкретного админа и отправляем сообщения в натс)
@@ -35,4 +35,4 @@ async def start_mass_dispatch(callback: CallbackQuery,
                             user_id=id,
                             payload=message_text)
 
-    await dialog_manager.next(show_mode=ShowMode.EDIT)
+    await dialog_manager.next(show_mode=ShowMode.AUTO)

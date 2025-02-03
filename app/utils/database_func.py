@@ -192,12 +192,12 @@ async def get_all_admins_from_db(session):
     admins = await session.execute(stmt)
     result = admins.scalars()
     return result
-
-
-# изменяем роль пользователя по id
-async def edit_role(session, admin_id, role):
-    stmt = select(Users).where(Users.telegram_id == admin_id)
-    result = await session.execute(stmt)
-    user = result.scalar()
-    user.role = role
-    await session.commit()
+#
+#
+# # изменяем роль пользователя по id
+# async def edit_role(session, admin_id, role):
+#     stmt = select(Users).where(Users.telegram_id == admin_id)
+#     result = await session.execute(stmt)
+#     user = result.scalar()
+#     user.role = role
+#     await session.commit()

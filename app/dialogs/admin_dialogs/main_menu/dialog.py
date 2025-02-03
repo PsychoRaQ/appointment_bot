@@ -51,8 +51,8 @@ main_menu_dialog = Dialog(
         state=AdminMenuSG.admin_menu,
         getter=get_admin_menu
     ),
+    # окно кнопки обратной связи (нужно перенести)
     Window(
-        # окно кнопки обратной связи (нужно перенести)
         Format(text='Для продления подписки напишите администратору:'),
         Format(text='{url}'),
         Back(Const(text='← Назад')),
