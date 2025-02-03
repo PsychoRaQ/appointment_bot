@@ -26,9 +26,10 @@ async def command_start_process(message: Message, dialog_manager: DialogManager)
     text_lst = message.text.split()
     if len(text_lst) > 1:
         admin_id = int(text_lst[1])
-        session = dialog_manager.middleware_data['session']
+        session = dialog_manager.middleware_data.get('session')
         pcode_in_database = await get_admin_pcode(admin_id, session)
-        if pcode_in_database:
+        grand_admin_id = dialog_manager.middleware_data.get('admin_ids')
+        if pcode_in_database or message.chat.id in grand_admin_id:
             await dialog_manager.start(state=StartSG.start_with_pcode, mode=StartMode.RESET_STACK)
             dialog_manager.dialog_data.update({'admin_id': admin_id})
         else:

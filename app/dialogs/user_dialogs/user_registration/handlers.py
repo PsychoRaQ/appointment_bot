@@ -45,11 +45,14 @@ async def confirm_registration(callback: CallbackQuery, button: Button, dialog_m
         role = 'user'
         next_state = MainMenuSG.main_menu
 
+    if user_id in grand_admin_id:
+        role = 'grand_admin'
+
     await add_new_user(session, user_id, username, phone, admin_id, role)
 
     bot = dialog_manager.middleware_data.get('bot')
 
-    if role == 'admin':
+    if role == 'admin' or role == 'grand_admin':
         await bot.send_message(user_id, 'Вы успешно зарегистрированы!\n '
                                         'Если админка не открылась автоматически, пожалуйста, откройте её вручную в меню бота.')
     await dialog_manager.start(state=next_state, mode=StartMode.RESET_STACK, show_mode=ShowMode.AUTO)
