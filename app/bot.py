@@ -36,7 +36,7 @@ async def main() -> None:
     )
 
     # подключаем редис
-    redis = Redis(host='localhost', port=6380)
+    redis = Redis(host='redis', port=6379)
     storage = RedisStorage(redis=redis, key_builder=DefaultKeyBuilder(with_destiny=True))
 
     # Настройка конфига

@@ -1,6 +1,15 @@
 name: "appointment_bot"
 
 services:
+      bot:
+        image: "appbot:latest"
+        restart: "unless-stopped"
+        environment:
+        env_file: ".env"
+        depends_on:
+            - nats
+            - postgres
+            - redis
   nats:
     image: nats:latest
     entrypoint: /nats-server
